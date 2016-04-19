@@ -71,7 +71,7 @@ a {
 }
 
 #site-header {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	bottom: 0;
@@ -116,7 +116,12 @@ a {
 	}
 
 
-
+.meta {
+	margin-top: 3em;
+	padding-top: 1em;
+	border-top: 1px solid #ccc;
+	color: #a4a4a4;
+}
 
 
 

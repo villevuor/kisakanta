@@ -117,7 +117,19 @@ function get_contest($slug) {
 	if($query->rowCount() > 0) {
 		$contest = $query->fetch();
 		$page['title'] = $contest['name'];
-		$page['content'] = $contest['location'];
+		
+		$page['content'] = '<p>';
+		$page['content'] .= (empty($contest['year']) ? '' : '<br><strong>Ajankohta:</strong> ' . (empty($contest['start_date']) ? $contest['year'] : (empty($contest['end_date']) ? date('j.n.Y', strtotime($contest['start_date'])) : date((date('Y', strtotime($contest['start_date'])) == date('Y', strtotime($contest['end_date'])) ? (date('m', strtotime($contest['start_date'])) == date('m', strtotime($contest['end_date'])) ? 'j.' : 'j.n.') : 'j.n.Y'), strtotime($contest['start_date'])) . '–' . date('j.n.Y', strtotime($contest['end_date'])))));
+		$page['content'] .= (empty($contest['location']) ? '' : '<br><strong>Kilpailualue:</strong> ' . $contest['location']);
+		$page['content'] .= (empty($contest['theme']) ? '' : '<br><strong>Teema:</strong> ' . $contest['theme']);
+		$page['content'] .= (empty($contest['organizer']) ? '' : '<br><strong>Järjestäjä:</strong> ' . (empty($contest['organizer_url']) ? $contest['organizer'] : '<a href="' . $contest['organizer_url'] . '" target="_blank">' . $contest['organizer'] . '</a>'));
+		$page['content'] .= (empty($contest['contact']) ? '' : '<br><strong>Yhteyshenkilö:</strong> ' . $contest['contact']);
+		$page['content'] .= '</p>';
+
+		$page['content'] .= get_task_list(array('contest' => $contest['id']));
+
+		$page['content'] .= (empty($contest['organizer']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($contest['date_added'])) . '</p>');
+
 	} else {
 		get_error(404);
 	}
@@ -160,6 +172,28 @@ function get_contest_list() {
 		return '';
 	}
 }
+
+function get_task_list($arguments = array()) {
+	global $db;
+
+	$query = $db->prepare('SELECT * FROM tasks WHERE contest = ?');
+	$query->execute(array($arguments['contest']));
+	
+	if($query->rowCount() > 0) {
+		
+		$tasks = '<ul>';
+		while($task = $query->fetch()) {
+			$tasks .= '<li><a href="/tehtavat/' . $task['id'] . '">' . $task['name'] . '</a></li>';
+		}
+		$tasks .= '</ul>';
+
+	} else {
+		return '';
+	}
+
+	return $tasks;
+}
+
 
 function get_error($code = 404, $msg = 'Sivua ei löytynyt.') {
 	global $page;
