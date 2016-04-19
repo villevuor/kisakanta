@@ -25,8 +25,7 @@ function page_setup() {
 			$page['content'] = 'Palveluun lisätyt tehtävät';
 			break;
 		default:
-			$page['title'] = 'Sivua ei löydy';
-			$page['content'] = 'Virhe 404';
+			get_error(404);
 			break;
 	}
 }
@@ -93,6 +92,21 @@ function get_content() {
 		<?php echo $page['content']; ?>
 	</article>
 	<?php
+}
+
+function get_error($code = 404, $msg = 'Sivua ei löytynyt.') {
+	global $page;
+	
+	header('Error', true, $code);
+
+	$page['title'] = 'Virhe ' . $code;
+	$page['content'] = '<p>' . $msg . '</p><p><a href="/">Palaa etusivulle.</a></p>';
+
+	get_header();
+	get_content();
+	get_footer();
+
+	exit;
 }
 
 ?>
