@@ -1,6 +1,7 @@
 <?php
 
-include('functions.php');
+require('config.php');
+require('functions.php');
 
 page_setup();
 
