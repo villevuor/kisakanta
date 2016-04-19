@@ -1,13 +1,44 @@
 <?php
 
+$page = array();
+
+function page_setup() {
+	global $page;
+
+	$path = (!isset($_GET['path']) || empty($_GET['path']) ? '' : $_GET['path']);
+
+	switch ($path) {
+		case '':
+			$page['title'] = 'Kisakanta';
+			$page['content'] = 'Tervetuloa kiskaan';
+			break;
+		case 'tietoa':
+			$page['title'] = 'Tietoa';
+			$page['content'] = 'Tietoa palvelusta';
+			break;
+		case 'kilpailut':
+			$page['title'] = 'Kilpailut';
+			$page['content'] = 'Palveluun lisätyt kilpailut';
+			break;
+		case 'tehtavat':
+			$page['title'] = 'Tehtävät';
+			$page['content'] = 'Palveluun lisätyt tehtävät';
+			break;
+		default:
+			$page['title'] = 'Sivua ei löydy';
+			$page['content'] = 'Virhe 404';
+			break;
+	}
+}
 
 function get_header() {
+	global $page;
 	?><!doctype html>
 	<html class="no-js" lang="fi">
 		<head>
 			<meta charset="utf-8">
 			<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-			<title><?php get_title(); ?></title>
+			<title><?php echo $page['title']; ?></title>
 			<meta name="description" content="">
 			<meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -54,8 +85,14 @@ function get_footer() {
 	<?php
 }
 
-function get_title() {
-	echo 'Kisakanta';
+function get_content() {
+	global $page;
+	?>
+	<article>
+		<h1><?php echo $page['title']; ?></h1>
+		<?php echo $page['content']; ?>
+	</article>
+	<?php
 }
 
 ?>
