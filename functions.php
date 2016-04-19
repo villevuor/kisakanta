@@ -111,13 +111,13 @@ function get_content() {
 function get_contest($slug) {
 	global $db, $page;
 
-	$query = $db->prepare('SELECT * FROM kilpailu WHERE id = ?');
+	$query = $db->prepare('SELECT * FROM contests WHERE slug = ?');
 	$query->execute(array($slug));
 
 	if($query->rowCount() > 0) {
 		$contest = $query->fetch();
-		$page['title'] = $contest['nimi'];
-		$page['content'] = $contest['kisapaikka'];
+		$page['title'] = $contest['name'];
+		$page['content'] = $contest['location'];
 	} else {
 		get_error(404);
 	}
@@ -126,13 +126,13 @@ function get_contest($slug) {
 function get_task($id) {
 	global $db, $page;
 
-	$query = $db->prepare('SELECT * FROM tehtava WHERE id = ?');
+	$query = $db->prepare('SELECT * FROM tasks WHERE id = ?');
 	$query->execute(array($id));
 
 	if($query->rowCount() > 0) {
 		$task = $query->fetch();
-		$page['title'] = $task['nimi'];
-		$page['content'] = $task['kasky'];
+		$page['title'] = $task['name'];
+		$page['content'] = $task['task'];
 	} else {
 		get_error(404);
 	}
@@ -141,7 +141,7 @@ function get_task($id) {
 function get_contest_list() {
 	global $db;
 
-	$query = $db->prepare('SELECT * FROM kilpailu');
+	$query = $db->prepare('SELECT * FROM contests');
 	$query->execute();
 
 	if($query->rowCount() > 0) {
@@ -149,7 +149,7 @@ function get_contest_list() {
 		$list = '<ul>';
 
 		while($contest = $query->fetch()) {
-			$list .= '<li><a href="/kisat/' . $contest['id'] . '">' . $contest['nimi'] . '</a></li>';
+			$list .= '<li><a href="/kisat/' . $contest['slug'] . '">' . $contest['name'] . '</a></li>';
 		}
 
 		$list .= '</ul>';
