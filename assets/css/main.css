@@ -2,18 +2,14 @@
 
 /*! HTML5 Boilerplate v5.0 | MIT License | http://h5bp.com/ */
 
-html {
-	color: #222;
-	font: 18px/1.618 'PT Serif', serif;
-}
 
 ::-moz-selection {
-	background: #b3d4fc;
+	background: #D7B4E6;
 	text-shadow: none;
 }
 
 ::selection {
-	background: #b3d4fc;
+	background: #D7B4E6;
 	text-shadow: none;
 }
 
@@ -65,6 +61,8 @@ textarea {
 
 html {
 	color: #1C242D;
+	background: #F5F5F5;
+	font: 18px/1.618 'PT Serif', serif;
 }
 
 a {
