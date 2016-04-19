@@ -138,13 +138,31 @@ function get_contest($slug) {
 function get_task($id) {
 	global $db, $page;
 
-	$query = $db->prepare('SELECT * FROM tasks WHERE id = ?');
+	$query = $db->prepare('SELECT contests.name AS contest_name, contests.year, contests.start_date, contests.end_date, task_types.name AS type_name, categories.name AS category_name, tasks.* FROM tasks, contests, task_types, categories WHERE tasks.id = ? AND tasks.contest = contests.id AND task_types.id = tasks.task_type AND categories.id = tasks.category');
 	$query->execute(array($id));
 
 	if($query->rowCount() > 0) {
 		$task = $query->fetch();
 		$page['title'] = $task['name'];
-		$page['content'] = $task['task'];
+		
+		$page['content'] = '<p>' . $task['contest_name'];
+		$page['content'] .= '<br>' . $task['year'];
+		$page['content'] .= '<br>' . ucfirst($task['category_name']);
+		$page['content'] .= '</p>';
+
+		$page['content'] .= '<p>' . ucfirst($task['type_name']) . '</p>';
+
+		$page['content'] .= '<h2>' . ucfirst($task['name']) . '</h2>';
+
+		$page['content'] .= '<p>' . $task['task'] . '</p>';
+
+		$page['content'] .= '<h4>Arvostelu</h4>';
+		$page['content'] .= '<p>' . nl2br($task['review']) . '</p>';
+		
+		$page['content'] .= '<h4>Liitteet</h4>';
+		$page['content'] .= '<p>' . nl2br($task['attachments']) . '</p>';
+
+
 	} else {
 		get_error(404);
 	}
