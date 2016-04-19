@@ -123,7 +123,13 @@ a {
 	color: #a4a4a4;
 }
 
+table {
+	text-align: left;
+}
 
+	td, th {
+		padding: 5px 10px 5px 0;
+	}
 
 
 

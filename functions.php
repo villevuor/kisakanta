@@ -126,7 +126,7 @@ function get_contest($slug) {
 		$page['content'] .= (empty($contest['contact']) ? '' : '<br><strong>Yhteyshenkilö:</strong> ' . $contest['contact']);
 		$page['content'] .= '</p>';
 
-		$page['content'] .= get_task_list(array('contest' => $contest['id']));
+		$page['content'] .= get_task_list_by_contest($contest['id']);
 
 		$page['content'] .= (empty($contest['organizer']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($contest['date_added'])) . '</p>');
 
@@ -173,19 +173,53 @@ function get_contest_list() {
 	}
 }
 
-function get_task_list($arguments = array()) {
+function get_task_list_by_contest($contest_id) {
 	global $db;
 
-	$query = $db->prepare('SELECT * FROM tasks WHERE contest = ?');
-	$query->execute(array($arguments['contest']));
+	$query = $db->prepare('SELECT * FROM tasks WHERE contest = ? ORDER BY name ASC');
+	$query->execute(array($contest_id));
+
 	
 	if($query->rowCount() > 0) {
-		
-		$tasks = '<ul>';
-		while($task = $query->fetch()) {
-			$tasks .= '<li><a href="/tehtavat/' . $task['id'] . '">' . $task['name'] . '</a></li>';
+
+		$all_series_in_contest = get_contest_series($contest_id);
+
+		$query2 = $db->prepare('SELECT task_series.task, task_series.max_points, contest_series.series FROM task_series, contest_series WHERE contest_series.contest = ? AND task_series.contest_series = contest_series.id');
+		$query2->execute(array($contest_id));
+
+		$points_by_series = array();
+
+		if($query2->rowCount() > 0) {
+			while($row = $query2->fetch()) {
+				$points_by_series[$row['task']][$row['series']] = $row['max_points'];
+			}
 		}
-		$tasks .= '</ul>';
+		
+
+		$tasks = '<table><thead><tr>';
+		$tasks .= '<th>Tehtävä</th>';
+
+		foreach($all_series_in_contest as $serie) {
+			$tasks .= '<th>' . ucfirst($serie['name']) . '</th>';
+		}
+
+		$tasks .= '</tr></thead><tbody>';
+
+		while($task = $query->fetch()) {
+			$tasks .= '<tr><td><a href="/tehtavat/' . $task['id'] . '">' . $task['name'] . '</a></td>';
+
+			foreach($all_series_in_contest as $serie) {
+				if(isset($points_by_series[$task['id']][$serie['id']])) {
+					$tasks .= '<td>' . $points_by_series[$task['id']][$serie['id']] . '</td>';
+				} else {
+					$tasks .= '<td></td>';
+				}
+			}
+
+			$tasks .= '</tr>';
+
+		}
+		$tasks .= '</tbody></table>';
 
 	} else {
 		return '';
@@ -194,6 +228,26 @@ function get_task_list($arguments = array()) {
 	return $tasks;
 }
 
+function get_contest_series($contest_id) {
+	global $db;
+
+	$query = $db->prepare('SELECT series.name, series.short_name, series.id FROM series, contest_series WHERE contest_series.contest = 1 AND contest_series.series = series.id ORDER BY series.`order`');
+	$query->execute(array($contest_id));
+
+	if($query->rowCount() > 0) {
+		
+		$series = array();
+
+		while($serie = $query->fetch()) {
+			$series[] = array('name' => $serie['name'], 'short_name' => $serie['short_name'], 'id' => $serie['id']);
+		}
+		
+		return $series;
+
+	} else {
+		return array();
+	}
+}
 
 function get_error($code = 404, $msg = 'Sivua ei löytynyt.') {
 	global $page;
