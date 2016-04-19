@@ -2,6 +2,12 @@
 
 $page = array();
 
+try {
+	$db = new PDO('mysql:host=' . $config['db']['host'] . ';dbname=' . $config['db']['name'], $config['db']['user'], $config['db']['password']);
+} catch (PDOException $error) {
+	get_error(500, 'Virhe tietokantayhteydessä.');
+}
+
 function page_setup() {
 	global $page;
 
