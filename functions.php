@@ -22,9 +22,15 @@ function page_setup() {
 			$page['title'] = 'Tietoa';
 			$page['content'] = 'Tietoa palvelusta';
 			break;
-		case 'kilpailut':
+		case (preg_match('/kisat\/(?<slug>[\-a-zA-Z0-9]+)/', $path, $matches) ? true : false) :
+			get_contest($matches['slug']);
+			break;
+		case 'kisat':
 			$page['title'] = 'Kilpailut';
 			$page['content'] = 'Palveluun lisätyt kilpailut';
+			break;
+		case (preg_match('/tehtavat\/(?<id>[0-9]+)/', $path, $matches) ? true : false) :
+			get_task($matches['id']);
 			break;
 		case 'tehtavat':
 			$page['title'] = 'Tehtävät';
@@ -47,9 +53,9 @@ function get_header() {
 			<meta name="description" content="">
 			<meta name="viewport" content="width=device-width, initial-scale=1">
 
-			<link rel="stylesheet" href="assets/css/main.css">
+			<link rel="stylesheet" href="/assets/css/main.css">
 
-			<script src="assets/js/vendor/modernizr-2.8.3.min.js"></script>
+			<script src="/assets/js/vendor/modernizr-2.8.3.min.js"></script>
 		</head>
 		<body>
 			<header id="site-header">
@@ -58,7 +64,7 @@ function get_header() {
 
 				<nav>
 					<ul>
-						<li><a href="/kilpailut">Kilpailut</a></li>
+						<li><a href="/kisat">Kilpailut</a></li>
 						<li><a href="/tehtavat">Tehtävät</a></li>
 						<li><a href="/tietoa">Tietoa</a></li>
 					</ul>
@@ -74,7 +80,7 @@ function get_footer() {
 	?>
 			</main>
 
-			<script src="assets/js/main.js"></script>
+			<script src="/assets/js/main.js"></script>
 
 			<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
 			<script>
@@ -98,6 +104,36 @@ function get_content() {
 		<?php echo $page['content']; ?>
 	</article>
 	<?php
+}
+
+function get_contest($slug) {
+	global $db, $page;
+
+	$query = $db->prepare('SELECT * FROM kilpailu WHERE id = ?');
+	$query->execute(array($slug));
+
+	if($query->rowCount() > 0) {
+		$contest = $query->fetch();
+		$page['title'] = $contest['nimi'];
+		$page['content'] = $contest['kisapaikka'];
+	} else {
+		get_error(404);
+	}
+}
+
+function get_task($id) {
+	global $db, $page;
+
+	$query = $db->prepare('SELECT * FROM tehtava WHERE id = ?');
+	$query->execute(array($id));
+
+	if($query->rowCount() > 0) {
+		$task = $query->fetch();
+		$page['title'] = $task['nimi'];
+		$page['content'] = $task['kasky'];
+	} else {
+		get_error(404);
+	}
 }
 
 function get_error($code = 404, $msg = 'Sivua ei löytynyt.') {
