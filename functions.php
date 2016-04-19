@@ -8,6 +8,8 @@ try {
 	get_error(500, 'Virhe tietokantayhteydessä.');
 }
 
+$db->exec("SET NAMES utf8mb4");
+
 function page_setup() {
 	global $page;
 
