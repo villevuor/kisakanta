@@ -27,7 +27,7 @@ function page_setup() {
 			break;
 		case 'kisat':
 			$page['title'] = 'Kilpailut';
-			$page['content'] = 'Palveluun lisätyt kilpailut';
+			$page['content'] = get_contest_list();
 			break;
 		case (preg_match('/tehtavat\/(?<id>[0-9]+)/', $path, $matches) ? true : false) :
 			get_task($matches['id']);
@@ -133,6 +133,29 @@ function get_task($id) {
 		$page['content'] = $task['kasky'];
 	} else {
 		get_error(404);
+	}
+}
+
+function get_contest_list() {
+	global $db;
+
+	$query = $db->prepare('SELECT * FROM kilpailu');
+	$query->execute();
+
+	if($query->rowCount() > 0) {
+		
+		$list = '<ul>';
+
+		while($contest = $query->fetch()) {
+			$list .= '<li><a href="/kisat/' . $contest['id'] . '">' . $contest['nimi'] . '</a></li>';
+		}
+
+		$list .= '</ul>';
+
+		return $list;
+
+	} else {
+		return '';
 	}
 }
 
