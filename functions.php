@@ -33,6 +33,7 @@ function page_setup() {
 			break;
 		case (preg_match('/tehtavat\/(?<id>[0-9]+)/', $path, $matches) ? true : false) :
 			get_task($matches['id']);
+			$page['hide_title'] = true;
 			break;
 		case 'tehtavat':
 			$page['title'] = 'Tehtävät';
@@ -102,7 +103,7 @@ function get_content() {
 	global $page;
 	?>
 	<article>
-		<h1><?php echo $page['title']; ?></h1>
+		<?php if(!isset($page['hide_title']) || !$page['hide_title']) : ?><h1><?php echo $page['title']; ?></h1><?php endif; ?>
 		<?php echo $page['content']; ?>
 	</article>
 	<?php

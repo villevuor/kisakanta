@@ -109,6 +109,7 @@ a {
 #content {
 	margin-left: 300px;
 	padding: 3em 4em;
+	max-width: 960px;
 }
 
 	#content h1 {
