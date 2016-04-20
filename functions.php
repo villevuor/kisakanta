@@ -73,6 +73,12 @@ function get_header() {
 					</ul>
 				</nav>
 
+				<nav class="secondary" role="secondary">
+					<ul>
+						<li><a href="/palaute">Palaute</a></li>
+					</ul>
+				</nav>
+
 			</header>
 
 			<main id="content" role="main">
