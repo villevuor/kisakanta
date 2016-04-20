@@ -126,7 +126,7 @@ function get_contest($slug) {
 		$page['title'] = $contest['name'];
 		
 		$page['content'] = '<p>';
-		$page['content'] .= (empty($contest['year']) ? '' : '<br><strong>Ajankohta:</strong> ' . format_date($contest['year'], $contest['start_date'], $contest['end_date']));
+		$page['content'] .= (empty($contest['year']) ? '' : '<strong>Ajankohta:</strong> ' . format_date($contest['year'], $contest['start_date'], $contest['end_date']));
 		$page['content'] .= (empty($contest['location']) ? '' : '<br><strong>Kilpailualue:</strong> ' . $contest['location']);
 		$page['content'] .= (empty($contest['theme']) ? '' : '<br><strong>Teema:</strong> ' . $contest['theme']);
 		$page['content'] .= (empty($contest['organizer']) ? '' : '<br><strong>Järjestäjä:</strong> ' . (empty($contest['organizer_url']) ? $contest['organizer'] : '<a href="' . $contest['organizer_url'] . '" target="_blank">' . $contest['organizer'] . '</a>'));
@@ -151,6 +151,7 @@ function get_task($id) {
 	if($query->rowCount() > 0) {
 		$task = $query->fetch();
 		$page['title'] = $task['name'];
+		$page['content'] = '';
 		
 		$series = get_task_series($task['id']);
 		$s = array();
@@ -184,7 +185,7 @@ function get_task($id) {
 			}
 		}
 
-		$page['content'] = '<p><strong><a href="/kisat/' . $task['contest_slug'] . '">' . $task['contest_name'] . ' ' . format_date($task['year'], $task['start_date'], $task['end_date']) . '</a></strong>';
+		$page['content'] .= '<p><strong><a href="/kisat/' . $task['contest_slug'] . '">' . $task['contest_name'] . ' ' . format_date($task['year'], $task['start_date'], $task['end_date']) . '</a></strong>';
 		$page['content'] .= '<br>' . ucfirst($task['category_name']);
 		$page['content'] .= '<br>Sarjat: ' . implode(', ', $s);
 		$page['content'] .= '<br>' . $max_points;
@@ -204,6 +205,27 @@ function get_task($id) {
 		if(!empty($task['attachments'])) {
 			$page['content'] .= '<h4>Liitteet</h4>';
 			$page['content'] .= '<p>' . nl2br($task['attachments'], false) . '</p>';
+		}
+
+		$query = $db->prepare('SELECT id FROM tasks WHERE contest = ? AND name = ?');
+		$query->execute(array($task['contest'], $task['name']));
+
+		if($query->rowCount() > 0) {
+			$page['content'] .= '<div class="alternative"><p>Tästä tehtävästä on olemassa erilliset versiot seuraaville sarjoille:</p><ul>';
+
+			while($alt_task = $query->fetch()) {
+				$alt_tasks[$alt_task['id']] = get_task_series($alt_task['id']);
+			}
+
+			foreach($alt_tasks as $alt_task => $alt_series) {
+				$alt_series_looped = array();
+				foreach($alt_series as $alt_serie) {
+					$alt_series_looped[] = $alt_serie['name'];
+				}
+				$page['content'] .= '<li><a href="/tehtavat/' . $alt_task . '">' . implode(', ', $alt_series_looped) . '</a></li>';
+			}
+
+			$page['content'] .= '</ul></div>';
 		}
 
 		$page['content'] .= (empty($task['date_added']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($task['date_added'])) . '</p>');

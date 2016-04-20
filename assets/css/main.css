@@ -129,6 +129,17 @@ a {
 	color: #a4a4a4;
 }
 
+.alternative {
+	background: #e6e6e6;
+	font-size: 0.9em;
+	padding: 1em 2em;
+	margin-top: 4em;
+}
+
+	.alternative p {
+		font-weight: bold;
+	}
+
 table {
 	text-align: left;
 }
