@@ -305,6 +305,27 @@ function get_contest_series($contest_id) {
 	}
 }
 
+function get_task_series($task_id) {
+	global $db;
+
+	$query = $db->prepare('SELECT series.name, task_series.max_points FROM series, task_series, contest_series WHERE task_series.task = ? AND contest_series.id = task_series.contest_series AND contest_series.series = series.id ORDER BY series.`order`');
+	$query->execute(array($task_id));
+
+	if($query->rowCount() > 0) {
+		
+		$tasks = array();
+
+		while($task = $query->fetch()) {
+			$tasks[] = array('name' => $task['name'], 'max_points' => $task['max_points']);
+		}
+		
+		return $tasks;
+
+	} else {
+		return array();
+	}
+}
+
 function get_error($code = 404, $msg = 'Sivua ei löytynyt.') {
 	global $page;
 	
