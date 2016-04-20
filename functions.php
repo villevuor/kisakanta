@@ -119,7 +119,7 @@ function get_contest($slug) {
 		$page['title'] = $contest['name'];
 		
 		$page['content'] = '<p>';
-		$page['content'] .= (empty($contest['year']) ? '' : '<br><strong>Ajankohta:</strong> ' . (empty($contest['start_date']) ? $contest['year'] : (empty($contest['end_date']) ? date('j.n.Y', strtotime($contest['start_date'])) : date((date('Y', strtotime($contest['start_date'])) == date('Y', strtotime($contest['end_date'])) ? (date('m', strtotime($contest['start_date'])) == date('m', strtotime($contest['end_date'])) ? 'j.' : 'j.n.') : 'j.n.Y'), strtotime($contest['start_date'])) . '–' . date('j.n.Y', strtotime($contest['end_date'])))));
+		$page['content'] .= (empty($contest['year']) ? '' : '<br><strong>Ajankohta:</strong> ' . format_date($contest['year'], $contest['start_date'], $contest['end_date']));
 		$page['content'] .= (empty($contest['location']) ? '' : '<br><strong>Kilpailualue:</strong> ' . $contest['location']);
 		$page['content'] .= (empty($contest['theme']) ? '' : '<br><strong>Teema:</strong> ' . $contest['theme']);
 		$page['content'] .= (empty($contest['organizer']) ? '' : '<br><strong>Järjestäjä:</strong> ' . (empty($contest['organizer_url']) ? $contest['organizer'] : '<a href="' . $contest['organizer_url'] . '" target="_blank">' . $contest['organizer'] . '</a>'));
@@ -128,7 +128,7 @@ function get_contest($slug) {
 
 		$page['content'] .= get_task_list_by_contest($contest['id']);
 
-		$page['content'] .= (empty($contest['organizer']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($contest['date_added'])) . '</p>');
+		$page['content'] .= (empty($contest['date_added']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($contest['date_added'])) . '</p>');
 
 	} else {
 		get_error(404);
@@ -138,30 +138,68 @@ function get_contest($slug) {
 function get_task($id) {
 	global $db, $page;
 
-	$query = $db->prepare('SELECT contests.name AS contest_name, contests.year, contests.start_date, contests.end_date, task_types.name AS type_name, categories.name AS category_name, tasks.* FROM tasks, contests, task_types, categories WHERE tasks.id = ? AND tasks.contest = contests.id AND task_types.id = tasks.task_type AND categories.id = tasks.category');
+	$query = $db->prepare('SELECT contests.name AS contest_name, contests.slug AS contest_slug, contests.year, contests.start_date, contests.end_date, task_types.name AS type_name, categories.name AS category_name, tasks.* FROM tasks, contests, task_types, categories WHERE tasks.id = ? AND tasks.contest = contests.id AND task_types.id = tasks.task_type AND categories.id = tasks.category');
 	$query->execute(array($id));
 
 	if($query->rowCount() > 0) {
 		$task = $query->fetch();
 		$page['title'] = $task['name'];
 		
-		$page['content'] = '<p>' . $task['contest_name'];
-		$page['content'] .= '<br>' . $task['year'];
+		$series = get_task_series($task['id']);
+		$s = array();
+		$p = array();
+
+		foreach($series as $serie) {
+			$s[] = $serie['name'];
+			$p[] = $serie['max_points'];
+		}
+
+		$p3 = $p2 = $p;
+		
+		sort($p2, SORT_NUMERIC);
+		rsort($p3, SORT_NUMERIC);
+
+		if($p2 == $p3) {
+			$max_points = 'Maksimipisteet: ' . $p[0];
+		} else {
+			$points = array();
+			
+			foreach($p as $k => $point) {
+				$points[$point][] = $s[$k];
+			}
+
+			$max_points = 'Maksimipisteet:';
+			$first = 1;
+			
+			foreach($points as $point => $serie) {
+				$max_points .= strtolower(($first ? ' ' : ', ') . $point . ' (' . implode(', ', $serie) . ')');
+				$first = 0;
+			}
+		}
+
+		$page['content'] = '<p><strong><a href="/kisat/' . $task['contest_slug'] . '">' . $task['contest_name'] . ' ' . format_date($task['year'], $task['start_date'], $task['end_date']) . '</a></strong>';
 		$page['content'] .= '<br>' . ucfirst($task['category_name']);
+		$page['content'] .= '<br>Sarjat: ' . implode(', ', $s);
+		$page['content'] .= '<br>' . $max_points;
 		$page['content'] .= '</p>';
 
-		$page['content'] .= '<p>' . ucfirst($task['type_name']) . '</p>';
+		$page['content'] .= '<p><em>' . ucfirst($task['type_name']) . '</em></p>';
 
 		$page['content'] .= '<h2>' . ucfirst($task['name']) . '</h2>';
 
-		$page['content'] .= '<p>' . $task['task'] . '</p>';
+		$page['content'] .= '<p>' . nl2br($task['task'], false) . '</p>';
 
-		$page['content'] .= '<h4>Arvostelu</h4>';
-		$page['content'] .= '<p>' . nl2br($task['review']) . '</p>';
+		if(!empty($task['review'])) {
+			$page['content'] .= '<h4>Arvostelu</h4>';
+			$page['content'] .= '<p>' . nl2br($task['review'], false) . '</p>';
+		}
 		
-		$page['content'] .= '<h4>Liitteet</h4>';
-		$page['content'] .= '<p>' . nl2br($task['attachments']) . '</p>';
+		if(!empty($task['attachments'])) {
+			$page['content'] .= '<h4>Liitteet</h4>';
+			$page['content'] .= '<p>' . nl2br($task['attachments'], false) . '</p>';
+		}
 
+		$page['content'] .= (empty($task['date_added']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($task['date_added'])) . '</p>');
 
 	} else {
 		get_error(404);
@@ -280,6 +318,10 @@ function get_error($code = 404, $msg = 'Sivua ei löytynyt.') {
 	get_footer();
 
 	exit;
+}
+
+function format_date($year, $start_date = '', $end_date = '') {
+	return (empty($start_date) ? $year : (empty($end_date) ? date('j.n.Y', strtotime($start_date)) : date((date('Y', strtotime($start_date)) == date('Y', strtotime($end_date)) ? (date('m', strtotime($start_date)) == date('m', strtotime($end_date)) ? 'j.' : 'j.n.') : 'j.n.Y'), strtotime($start_date)) . '–' . date('j.n.Y', strtotime($end_date))));
 }
 
 ?>
