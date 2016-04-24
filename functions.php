@@ -357,8 +357,6 @@ function get_task_list_by_contest($contest_id) {
 
 		$points_by_series = array();
 
-		var_dump($all_series_in_contest);
-
 		if($query2->rowCount() > 0) {
 			while($row = $query2->fetch()) {
 				$points_by_series[$row['task']][$row['series']] = $row['max_points'];
