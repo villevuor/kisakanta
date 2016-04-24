@@ -218,14 +218,6 @@ label {
 	display: none;
 }
 
-table tr td, table tr th {
-	display: none;
-}
-
-table tr td:first-child, table tr th:first-child {
-	display: block;
-}
-
 
 /* ==========================================================================
    Media Queries
@@ -266,6 +258,14 @@ table tr td:first-child, table tr th:first-child {
 		#menu-toggle span:nth-child(1) { top: 5px; }
 		#menu-toggle span:nth-child(2) { top: 15px; }
 		#menu-toggle span:nth-child(3) { top: 25px; }
+
+	table tr td, table tr th {
+		display: none;
+	}
+
+	table tr td:first-child, table tr th:first-child {
+		display: block;
+	}
 }
 
 @media print,
