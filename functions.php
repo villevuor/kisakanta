@@ -373,7 +373,25 @@ function get_task_list_by_contest($contest_id) {
 		$tasks .= '</tr></thead><tbody>';
 
 		while($task = $query->fetch()) {
-			$tasks .= '<tr><td><a href="/tehtavat/' . $task['id'] . '">' . $task['name'] . '</a></td>';
+			$_tasks[] = $task;
+		}
+
+		for($i = 0; $i < count($_tasks); $i++) {
+
+			if($_tasks[$i]['name'] === $_tasks[$i + 1]['name']) {
+				$_tasks[$i+1]['link'] = '<a href="/tehtavat/' . $_tasks[$i]['id'] . '">' . $_tasks[$i]['name'] . '</a>';
+				$points_by_series[$_tasks[$i + 1]['id']] = $points_by_series[$_tasks[$i]['id']] + $points_by_series[$_tasks[$i + 1]['id']];
+				unset($_tasks[$i]);
+			} else {
+				if(empty($_tasks[$i]['link'])) {
+					$_tasks[$i]['link'] .= '<a href="/tehtavat/' . $_tasks[$i]['id'] . '">' . $_tasks[$i]['name'] . '</a>';
+				}
+			}
+
+		}
+
+		foreach($_tasks as $task) {
+			$tasks .= '<tr><td>' . $task['link'] . '</td>';
 
 			foreach($all_series_in_contest as $serie) {
 				if(isset($points_by_series[$task['id']][$serie['id']])) {
@@ -382,10 +400,9 @@ function get_task_list_by_contest($contest_id) {
 					$tasks .= '<td></td>';
 				}
 			}
-
 			$tasks .= '</tr>';
-
 		}
+
 		$tasks .= '</tbody></table>';
 
 	} else {
@@ -406,7 +423,7 @@ function get_contest_series($contest_id) {
 		$series = array();
 
 		while($serie = $query->fetch()) {
-			$series[] = array('name' => $serie['name'], 'short_name' => $serie['short_name'], 'id' => $serie['id']);
+			$series[$serie['id']] = array('name' => $serie['name'], 'short_name' => $serie['short_name'], 'id' => $serie['id']);
 		}
 		
 		return $series;
