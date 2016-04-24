@@ -61,6 +61,7 @@ function get_header() {
 			<script src="/assets/js/vendor/modernizr-2.8.3.min.js"></script>
 		</head>
 		<body>
+			<a href="#" id="menu-toggle"><span></span><span></span><span></span></a>
 			<header id="site-header">
 
 				<a rel="home" href="/" title="Etusivu" class="site-title">Kisakanta</a>
