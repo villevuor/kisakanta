@@ -357,6 +357,8 @@ function get_task_list_by_contest($contest_id) {
 
 		$points_by_series = array();
 
+		var_dump($all_series_in_contest);
+
 		if($query2->rowCount() > 0) {
 			while($row = $query2->fetch()) {
 				$points_by_series[$row['task']][$row['series']] = $row['max_points'];
@@ -410,7 +412,7 @@ function get_task_list_by_contest($contest_id) {
 function get_contest_series($contest_id) {
 	global $db;
 
-	$query = $db->prepare('SELECT series.name, series.short_name, series.id FROM series, contest_series WHERE contest_series.contest = 1 AND contest_series.series = series.id ORDER BY series.`order`');
+	$query = $db->prepare('SELECT series.name, series.short_name, series.id FROM series, contest_series WHERE contest_series.contest = ? AND contest_series.series = series.id ORDER BY series.`order`');
 	$query->execute(array($contest_id));
 
 	if($query->rowCount() > 0) {
