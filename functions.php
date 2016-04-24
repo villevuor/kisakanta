@@ -37,7 +37,7 @@ function page_setup() {
 			break;
 		case 'tehtavat':
 			$page['title'] = 'Tehtävät';
-			$page['content'] = 'Palveluun lisätyt tehtävät';
+			$page['content'] = get_task_list();
 			break;
 		default:
 			get_error(404);
@@ -271,6 +271,75 @@ function get_contest_list() {
 	}
 }
 
+function get_task_list() {
+	global $db;
+
+	$filters = '<h3>Hae tehtävistä</h3><form action="/tehtavat" method="get" class="filters">';
+	$filters .= '<div class="form-group"><select name="kategoria">' . get_options('category') . '</select></div>';
+	$filters .= '<div class="form-group"><select name="sarja">' . get_options('serie') . '</select></div>';
+	$filters .= '<div class="form-group"><select name="tyyppi">' . get_options('type') . '</select></div>';
+	$filters .= '<div class="form-group block"><input type="text" name="s" value="' . (!empty($_GET['s']) ? $_GET['s'] : '') . '" placeholder="Hae tehtävistä"></div>';
+	$filters .= '<input type="submit" value="Hae"><input type="reset" value="Tyhjennä kentät">';
+	$filters .= '</form>';
+
+	$sql = 'SELECT * FROM tasks WHERE';
+	$params = array();
+
+
+	if(isset($_GET['sarja']) && !empty($_GET['sarja'])) {
+		$sql = 'SELECT tasks.* FROM tasks, task_series, contest_series WHERE tasks.id = task_series.task AND contest_series.series = ? AND task_series.contest_series = contest_series.id';
+		$params[] = $_GET['sarja'];
+	}
+
+	if(isset($_GET['kategoria']) && !empty($_GET['kategoria'])) {
+		$sql .= ' AND tasks.category = ?';
+		$params[] = $_GET['kategoria'];
+	}
+	
+	if(isset($_GET['tyyppi']) && !empty($_GET['tyyppi'])) {
+		$sql .= ' AND tasks.task_type = ?';
+		$params[] = $_GET['tyyppi'];
+	}
+	
+	if(isset($_GET['s']) && !empty($_GET['s'])) {
+		$sql .= ' AND (tasks.name LIKE ? OR tasks.task LIKE ?)';
+		$params[] = '%' . $_GET['s'] . '%';
+		$params[] = '%' . $_GET['s'] . '%';
+	}
+
+	$sql .= ' GROUP BY tasks.name ORDER BY tasks.date_added DESC';
+	$sql = str_replace('WHERE AND', 'WHERE', $sql);
+
+	if(empty($params)) {
+		$sql = 'SELECT * FROM tasks GROUP BY name ORDER BY date_added DESC LIMIT 20';
+		$header = 'Viimeksi lisätyt tehtävät';
+	}
+
+	$query = $db->prepare($sql);
+	$query->execute($params);
+
+	if($query->rowCount() > 0) {
+
+		if(empty($header)) {
+			$count = $query->rowCount();
+			$header = ($count == 1 ? '1 hakutulos' : $count . ' hakutulosta');
+		}
+
+		$tasks = '<ul>';
+
+		while($task = $query->fetch()) {
+			$tasks .= '<li><a href="/tehtavat/' . $task['id'] . '">' . $task['name'] . '</a></li>';
+		}
+
+		$tasks .= '</ul>';
+
+		return $filters . '<h3>' . $header . '</h3>' . $tasks;
+	} else {
+		return $filters . '<p>Ei hakutuloksia</p>';
+	}
+}
+
+
 function get_task_list_by_contest($contest_id) {
 	global $db;
 
@@ -293,7 +362,6 @@ function get_task_list_by_contest($contest_id) {
 			}
 		}
 		
-
 		$tasks = '<table><thead><tr>';
 		$tasks .= '<th>Tehtävä</th>';
 
@@ -366,6 +434,49 @@ function get_task_series($task_id) {
 	} else {
 		return array();
 	}
+}
+
+function get_options($field) {
+	global $db;
+
+	$return = '';
+
+	if($field == 'category') {
+
+		$query = $db->prepare('SELECT * FROM categories ORDER BY name');
+		$query->execute();
+
+		$return .= '<option disabled' . (!isset($_GET['kategoria']) ? ' selected' : '') . '>Kategoria</option>';
+
+		while($cat = $query->fetch()) {
+			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['kategoria']) && $_GET['kategoria'] == $cat['id']) ? ' selected' : '') . '>' . $cat['name'] . '</option>';
+		}
+
+	} elseif($field == 'serie') {
+
+		$query = $db->prepare('SELECT * FROM series ORDER BY name');
+		$query->execute();
+
+		$return .= '<option disabled' . (!isset($_GET['serie']) ? ' selected' : '') . '>Sarja</option>';
+
+		while($cat = $query->fetch()) {
+			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['sarja']) && $_GET['sarja'] == $cat['id']) ? ' selected' : '') . '>' . $cat['name'] . '</option>';
+		}
+
+	} elseif($field == 'type') {
+
+		$query = $db->prepare('SELECT * FROM task_types ORDER BY name');
+		$query->execute();
+
+		$return .= '<option disabled' . (!isset($_GET['tyyppi']) ? ' selected' : '') . '>Tehtävätyyppi</option>';
+
+		while($cat = $query->fetch()) {
+			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['tyyppi']) && $_GET['tyyppi'] == $cat['id']) ? ' selected' : '') . '>' . $cat['name'] . '</option>';
+		}
+
+	}
+
+	return $return;
 }
 
 function get_error($code = 404, $msg = 'Sivua ei löytynyt.') {

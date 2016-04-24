@@ -165,6 +165,54 @@ ul.contests {
 		border-top: none;
 	}
 
+input, select, button {
+	outline: none;
+}
+
+select {
+	width: 180px;
+}
+
+input[type="text"], input[type="email"] {
+	height: 40px;
+	line-height: 30px;
+	padding: 5px 10px;
+	display: block;
+	width: 100%;
+}
+
+input[type="submit"], input[type="reset"] {
+	display: inline-block;
+	-webkit-appearance: none;
+	background: #45759E;
+	padding: 5px 10px;
+	height: 40px;
+	border: 0;
+	color: #fff;
+	min-width: 100px;
+	text-align: center;
+	margin-right: 15px;
+}
+
+	input[type="reset"] {
+		opacity: 0.6;
+	}
+
+label {
+	display: block;
+}
+
+.form-group {
+	width: 200px;
+	float: left;
+	margin: 0 0 1em;
+}
+
+	.form-group.block {
+		width: 580px;
+		float: none;
+	}
+
 
 
 /* ==========================================================================
