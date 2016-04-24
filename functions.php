@@ -210,7 +210,7 @@ function get_task($id) {
 		$query = $db->prepare('SELECT id FROM tasks WHERE contest = ? AND name = ?');
 		$query->execute(array($task['contest'], $task['name']));
 
-		if($query->rowCount() > 0) {
+		if($query->rowCount() > 1) {
 			$page['content'] .= '<div class="alternative"><p>Tästä tehtävästä on olemassa erilliset versiot seuraaville sarjoille:</p><ul>';
 
 			while($alt_task = $query->fetch()) {
@@ -222,7 +222,11 @@ function get_task($id) {
 				foreach($alt_series as $alt_serie) {
 					$alt_series_looped[] = $alt_serie['name'];
 				}
-				$page['content'] .= '<li><a href="/tehtavat/' . $alt_task . '">' . implode(', ', $alt_series_looped) . '</a></li>';
+				if($alt_task == $task['id']) {
+					$page['content'] .= '<li>' . implode(', ', $alt_series_looped) . '</li>';
+				} else {
+					$page['content'] .= '<li><a href="/tehtavat/' . $alt_task . '">' . implode(', ', $alt_series_looped) . '</a></li>';
+				}
 			}
 
 			$page['content'] .= '</ul></div>';
