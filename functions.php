@@ -242,18 +242,27 @@ function get_task($id) {
 function get_contest_list() {
 	global $db;
 
-	$query = $db->prepare('SELECT * FROM contests');
+	$query = $db->prepare('SELECT contests.*, contest_types.name AS type FROM contests, contest_types WHERE contests.contest_type = contest_types.id ORDER BY contests.year DESC');
 	$query->execute();
 
 	if($query->rowCount() > 0) {
-		
-		$list = '<ul>';
 
 		while($contest = $query->fetch()) {
-			$list .= '<li><a href="/kisat/' . $contest['slug'] . '">' . $contest['name'] . '</a></li>';
+			$contests_by_type[$contest['type']][] = $contest;
 		}
 
-		$list .= '</ul>';
+		$list = '';
+
+		foreach($contests_by_type as $type => $contests) {
+			$list .= '<h3>' . $type . '</h3>';
+			$list .= '<ul class="contests">';	
+
+			foreach($contests as $contest) {
+				$list .= '<li><a href="/kisat/' . $contest['slug'] . '">' . $contest['name'] . '</a> <span class="meta">' . format_date($contest['year'], $contest['start_date'], $contest['end_date']) . ' ' . $contest['location'] . '</span></li>';
+			}
+
+			$list .= '</ul>';
+		}
 
 		return $list;
 
