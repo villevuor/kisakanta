@@ -165,7 +165,7 @@ ul.contests {
 		border-top: none;
 	}
 
-input, select, button {
+input, select, button, textarea {
 	outline: none;
 }
 
@@ -173,12 +173,17 @@ select {
 	width: 180px;
 }
 
-input[type="text"], input[type="email"] {
+input[type="text"], input[type="email"], textarea {
 	height: 40px;
 	line-height: 30px;
 	padding: 5px 10px;
 	display: block;
 	width: 100%;
+	border: 1px solid #ccc;
+}
+
+textarea {
+	height: 100px;
 }
 
 input[type="submit"], input[type="reset"] {
@@ -216,6 +221,11 @@ label {
 
 #menu-toggle {
 	display: none;
+}
+
+.feedback input {
+	margin-top: 1em;
+	max-width: 300px;
 }
 
 

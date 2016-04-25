@@ -24,6 +24,10 @@ function page_setup() {
 			$page['title'] = 'Tietoa';
 			$page['content'] = 'Tietoa palvelusta';
 			break;
+		case 'palaute':
+			$page['title'] = 'Palaute';
+			$page['content'] = get_feedback_form();
+			break;
 		case (preg_match('/kisat\/(?<slug>[\-a-zA-Z0-9]+)/', $path, $matches) ? true : false) :
 			get_contest($matches['slug']);
 			break;
@@ -492,6 +496,30 @@ function get_options($field) {
 	}
 
 	return $return;
+}
+
+
+function get_feedback_form() {
+	
+	if(isset($_POST['feedback']) && !empty(trim($_POST['feedback']))) {
+	
+		// TO DO: really handle feedback :)
+
+		$form = 'Kiitos palautteestasi!';
+	
+	} else {
+	
+		$form .= '<p>Voit antaa palvelusta palautetta tällä lomakkeella. Täytähän yhteystietosi, jos haluat viestillesi vastauksen.</p>';
+		$form .= '<form action="/palaute" method="post" class="feedback">';
+		$form .= '<textarea name="feedback" placeholder="Palautteesi" required></textarea>';
+		$form .= '<input type="text" placeholder="Nimi">';
+		$form .= '<input type="email" placeholder="Sähköposti">';
+		$form .= '<input type="submit" value="Lähetä">';
+		$form .= '</form>';
+	
+	}
+
+	return $form;
 }
 
 function get_error($code = 404, $msg = 'Sivua ei löytynyt.') {
