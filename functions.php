@@ -55,10 +55,12 @@ function get_header() {
 			<title><?php echo $page['title']; ?></title>
 			<meta name="description" content="">
 			<meta name="viewport" content="width=device-width, initial-scale=1">
+			
+			<meta name="robots" content="noindex, nofollow">
 
-			<link rel="stylesheet" href="/assets/css/main.css">
+			<link rel="stylesheet" href="/assets/css/main.css" async>
 
-			<script src="/assets/js/vendor/modernizr-2.8.3.min.js"></script>
+			<?php /* <script src="/assets/js/vendor/modernizr-2.8.3.min.js"></script> */ ?>
 		</head>
 		<body>
 			<a href="#" id="menu-toggle"><span></span><span></span><span></span></a>
