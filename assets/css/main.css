@@ -76,7 +76,7 @@ a {
 	left: 0;
 	bottom: 0;
 	width: 300px;
-	background: #009688;
+	background: #008C65;
 	padding: 3em 2em;
 	color: #D7E5E5;
 }
@@ -249,7 +249,7 @@ label {
 
 		#menu-toggle span {
 			height: 4px;
-			background: #009688;
+			background: #008C65;
 			width: 30px;
 			position: absolute;
 			left: 5px;
