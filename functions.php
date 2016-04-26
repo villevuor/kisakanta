@@ -1,10 +1,7 @@
 <?php
 
-// Download Mailgun only when needed
-if(isset($_POST['feedback']) && !empty(trim($_POST['feedback']))) {
-	require('vendor/autoload.php');
-	use Mailgun\Mailgun;
-}
+require('vendor/autoload.php');
+use Mailgun\Mailgun;
 
 $page = array();
 
@@ -531,7 +528,7 @@ function get_feedback_form() {
 	
 	} else {
 	
-		$form .= '<p>Voit antaa palvelusta palautetta tällä lomakkeella. Täytähän yhteystietosi, jos haluat viestillesi vastauksen.</p>';
+		$form = '<p>Voit antaa palvelusta palautetta tällä lomakkeella. Täytähän yhteystietosi, jos haluat viestillesi vastauksen.</p>';
 		$form .= '<form action="/palaute" method="post" class="feedback">';
 		$form .= '<textarea name="feedback" placeholder="Palautteesi" required></textarea>';
 		$form .= '<input type="text" placeholder="Nimi" name="name" maxlength="50">';
