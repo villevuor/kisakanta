@@ -7,4 +7,7 @@ $config['db']['name'] = '';
 $config['db']['user'] = '';
 $config['db']['password'] = '';
 
+$config['mailgun']['apikey'] = '';
+$config['mailgun']['domain'] = '';
+
 ?>

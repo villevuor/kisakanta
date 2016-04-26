@@ -1,5 +1,11 @@
 <?php
 
+// Download Mailgun only when needed
+if(isset($_POST['feedback']) && !empty(trim($_POST['feedback']))) {
+	require('vendor/autoload.php');
+	use Mailgun\Mailgun;
+}
+
 $page = array();
 
 try {
@@ -500,7 +506,7 @@ function get_options($field) {
 
 
 function get_feedback_form() {
-	global $db;
+	global $db, $config;
 
 	if(isset($_POST['feedback']) && !empty(trim($_POST['feedback']))) {
 	
@@ -508,7 +514,20 @@ function get_feedback_form() {
 
 		$query->execute(array($_POST['feedback'], (empty($_POST['name']) ? null : $_POST['name']), (empty($_POST['email']) ? null : $_POST['email']), $_SERVER['REMOTE_ADDR']));
 
-		$form = 'Kiitos palautteestasi!';
+		$client = new \Http\Adapter\Guzzle6\Client();
+		
+		$mailgun = new Mailgun($config['mailgun']['apikey'], $client);
+
+		$mailgun->sendMessage($config['mailgun']['domain'],
+			array(
+				'from'    => 'noreply@kisakanta.fi',
+				'to'      => 'villevuor@gmail.com',
+				'subject' => 'Palautetta Kisakannasta ' . date('j.n.Y'), 
+				'text'    => 'Lähettäjä: ' . (empty($_POST['name']) ? '–' : $_POST['name']) . PHP_EOL . 'Sähköposti: ' . (empty($_POST['email']) ? '–' : $_POST['email']) . PHP_EOL . PHP_EOL . $_POST['feedback'],
+			)
+		);
+
+		$form = '<p>Kiitos palautteestasi!</p>';
 	
 	} else {
 	
