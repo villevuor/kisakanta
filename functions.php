@@ -500,10 +500,13 @@ function get_options($field) {
 
 
 function get_feedback_form() {
-	
+	global $db;
+
 	if(isset($_POST['feedback']) && !empty(trim($_POST['feedback']))) {
 	
-		// TO DO: really handle feedback :)
+		$query = $db->prepare('INSERT INTO feedbacks (feedback, name, email, ip) VALUES (?, ?, ?, ?)');
+
+		$query->execute(array($_POST['feedback'], (empty($_POST['name']) ? null : $_POST['name'], (empty($_POST['email']) ? null : $_POST['email']), $_SERVER['REMOTE_ADDR']));
 
 		$form = 'Kiitos palautteestasi!';
 	
@@ -512,8 +515,8 @@ function get_feedback_form() {
 		$form .= '<p>Voit antaa palvelusta palautetta tällä lomakkeella. Täytähän yhteystietosi, jos haluat viestillesi vastauksen.</p>';
 		$form .= '<form action="/palaute" method="post" class="feedback">';
 		$form .= '<textarea name="feedback" placeholder="Palautteesi" required></textarea>';
-		$form .= '<input type="text" placeholder="Nimi">';
-		$form .= '<input type="email" placeholder="Sähköposti">';
+		$form .= '<input type="text" placeholder="Nimi" name="name" maxlength="50">';
+		$form .= '<input type="email" placeholder="Sähköposti" name="email" maxlength="50">';
 		$form .= '<input type="submit" value="Lähetä">';
 		$form .= '</form>';
 	
