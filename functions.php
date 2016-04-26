@@ -506,7 +506,7 @@ function get_feedback_form() {
 	
 		$query = $db->prepare('INSERT INTO feedbacks (feedback, name, email, ip) VALUES (?, ?, ?, ?)');
 
-		$query->execute(array($_POST['feedback'], (empty($_POST['name']) ? null : $_POST['name'], (empty($_POST['email']) ? null : $_POST['email']), $_SERVER['REMOTE_ADDR']));
+		$query->execute(array($_POST['feedback'], (empty($_POST['name']) ? null : $_POST['name']), (empty($_POST['email']) ? null : $_POST['email']), $_SERVER['REMOTE_ADDR']));
 
 		$form = 'Kiitos palautteestasi!';
 	
