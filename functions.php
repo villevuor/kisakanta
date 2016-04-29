@@ -548,7 +548,7 @@ function get_front_page() {
 	$front_page .= '<div class="column"><h3>Eniten katsotut tehtävät</h3><ol>';
 
 	while($task = $query->fetch()){
-		$front_page .= '<li><a href="/kisat/' . $task['id'] . '">' . $task['name'] . '</a></li>';
+		$front_page .= '<li><a href="/tehtavat/' . $task['id'] . '">' . $task['name'] . '</a></li>';
 	}
 
 	$front_page .= '</ol></div>';
