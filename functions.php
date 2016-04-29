@@ -524,7 +524,7 @@ function get_front_page() {
 	$query->execute();
 	$task_count = $query->fetch()['count'];
 
-	$front_page .= '<p>Kisakannasta löytyy tällä hetkellä <a href="/kilpailut">' . $contest_count . ' kilpailua</a> ja <a href="/tehtavat">' . $task_count . ' tehtävää</a>. Osallistu Kisakannan arkistointiin <a href="laheta">lähettämällä oma kilpailusi palveluun</a>!';
+	$front_page .= '<p>Kisakannasta löytyy tällä hetkellä <a href="/kisat">' . $contest_count . ' kilpailua</a> ja <a href="/tehtavat">' . $task_count . ' tehtävää</a>. Osallistu Kisakannan arkistointiin <a href="laheta">lähettämällä oma kilpailusi palveluun</a>!';
 
 	return $front_page;
 }
