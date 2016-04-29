@@ -228,6 +228,12 @@ label {
 	max-width: 300px;
 }
 
+img {
+	max-width: 100%;
+	display: block;
+	margin: 1em 0;
+}
+
 
 /* ==========================================================================
    Media Queries

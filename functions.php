@@ -21,11 +21,16 @@ function page_setup() {
 	switch ($path) {
 		case '':
 			$page['title'] = 'Kisakanta';
-			$page['content'] = 'Tervetuloa kiskaan';
+			$page['hide_title'] = true;
+			$page['content'] = get_front_page();
 			break;
 		case 'tietoa':
 			$page['title'] = 'Tietoa';
 			$page['content'] = 'Tietoa palvelusta';
+			break;
+		case 'laheta':
+			$page['title'] = 'Lähetä kilpailusi';
+			$page['content'] = 'Osallistu arkistointiin';
 			break;
 		case 'palaute':
 			$page['title'] = 'Palaute';
@@ -79,6 +84,7 @@ function get_header() {
 					<ul>
 						<li><a href="/kisat">Kilpailut</a></li>
 						<li><a href="/tehtavat">Tehtävät</a></li>
+						<li><a href="/laheta">Lähetä kilpailusi</a></li>
 						<li><a href="/tietoa">Tietoa</a></li>
 					</ul>
 				</nav>
@@ -499,6 +505,28 @@ function get_options($field) {
 	}
 
 	return $return;
+}
+
+
+function get_front_page() {
+	global $db;
+
+	$front_page = '<img src="/assets/img/_MG_5302.jpg" alt="Vuosikerta-Punkun lähtö 20.9.2014">';
+	$front_page .= '<h1>Tervetuloa Kisakantaan</h1>';
+
+	$front_page .= '<p>Kisakanta on arkisto <a href="https://fi.scoutwiki.org/Partiotaitokilpailut" target="_blank">partiotaitokilpailujen</a> tehtäväkäskyille ja muille dokumenteille. Palvelussa voit fiilistellä pt-kisoja jälkikäteen tai etsiä esimerkiksi valmiita tehtäviä lippukuntakisoihin.</p>';
+
+	$query = $db->prepare('SELECT COUNT(*) as count FROM contests');
+	$query->execute();
+	$contest_count = $query->fetch()['count'];
+
+	$query = $db->prepare('SELECT COUNT(DISTINCT contest, name) as count FROM tasks');
+	$query->execute();
+	$task_count = $query->fetch()['count'];
+
+	$front_page .= '<p>Kisakannasta löytyy tällä hetkellä <a href="/kilpailut">' . $contest_count . ' kilpailua</a> ja <a href="/tehtavat">' . $task_count . ' tehtävää</a>. Osallistu Kisakannan arkistointiin <a href="laheta">lähettämällä oma kilpailusi palveluun</a>!';
+
+	return $front_page;
 }
 
 
