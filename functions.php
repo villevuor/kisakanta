@@ -250,6 +250,10 @@ function get_task($id) {
 
 		$page['content'] .= (empty($task['date_added']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($task['date_added'])) . '</p>');
 
+		// Update views count
+		$query = $db->prepare('UPDATE tasks SET views = views + 1 WHERE id = ?');
+		$query->execute(array($task['id']));
+
 	} else {
 		get_error(404);
 	}
@@ -525,6 +529,31 @@ function get_front_page() {
 	$task_count = $query->fetch()['count'];
 
 	$front_page .= '<p>Kisakannasta löytyy tällä hetkellä <a href="/kisat">' . $contest_count . ' kilpailua</a> ja <a href="/tehtavat">' . $task_count . ' tehtävää</a>. Osallistu Kisakannan arkistointiin <a href="laheta">lähettämällä oma kilpailusi palveluun</a>!';
+
+	$query = $db->prepare('SELECT name, slug, date_added FROM contests ORDER BY date_added DESC LIMIT 5');
+	$query->execute();
+
+	$front_page .= '<div class="column"><h3>Äskettäin lisätyt kilpailut</h3><ul>';
+
+	while($contest = $query->fetch()){
+		$front_page .= '<li><a href="/kisat/' . $contest['slug'] . '">' . $contest['name'] . '</a><span class="meta">, lisätty ' . date('j.n.Y', strtotime($contest['date_added'])) . '</span></li>';
+	}
+
+	$front_page .= '</ul></div>';
+
+
+	$query = $db->prepare('SELECT name, id, date_added FROM tasks GROUP BY name ORDER BY SUM(views) DESC LIMIT 5');
+	$query->execute();
+
+	$front_page .= '<div class="column"><h3>Eniten katsotut tehtävät</h3><ol>';
+
+	while($task = $query->fetch()){
+		$front_page .= '<li><a href="/kisat/' . $task['id'] . '">' . $task['name'] . '</a></li>';
+	}
+
+	$front_page .= '</ol></div>';
+
+	$front_page .= '<p class="meta">Kuva: Tero Honkaniemi, Espoon Punanen 2014</p>';
 
 	return $front_page;
 }

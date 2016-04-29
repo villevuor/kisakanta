@@ -129,6 +129,13 @@ a {
 	color: #a4a4a4;
 }
 
+	li .meta {
+		display: inline;
+		margin: 0;
+		padding: 0;
+		border-top: none;
+	}
+
 .alternative {
 	background: #e6e6e6;
 	font-size: 0.9em;
@@ -158,12 +165,6 @@ ul.contests {
 	padding-left: 0;
 }
 
-	ul.contests .meta {
-		display: inline;
-		margin: 0;
-		padding: 0;
-		border-top: none;
-	}
 
 input, select, button, textarea {
 	outline: none;
@@ -234,10 +235,27 @@ img {
 	margin: 1em 0;
 }
 
+.column {
+	width: 50%;
+	padding-right: 40px;
+	display: inline-block;
+}
+
+	.column ul, .column ol {
+		padding-left: 20px;
+	}
+
 
 /* ==========================================================================
    Media Queries
    ========================================================================== */
+
+@media only screen and (max-width: 1179px) {
+	.column {
+		display: block;
+		width: 100%;
+	}
+}
 
 @media only screen and (max-width: 767px) {
 	#site-header {
