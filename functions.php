@@ -322,6 +322,7 @@ function get_task_list() {
 	$filters .= '<div class="form-group"><select name="kategoria">' . get_options('category') . '</select></div>';
 	$filters .= '<div class="form-group"><select name="sarja">' . get_options('serie') . '</select></div>';
 	$filters .= '<div class="form-group"><select name="tyyppi">' . get_options('type') . '</select></div>';
+	$filters .= '<div class="form-group"><select name="kisa">' . get_options('contest') . '</select></div>';
 	$filters .= '<div class="form-group block"><input type="text" name="s" value="' . (!empty($_GET['s']) ? $_GET['s'] : '') . '" placeholder="Hae tehtävistä"></div>';
 	$filters .= '<input type="submit" value="Hae"><input type="reset" value="Tyhjennä kentät">';
 	$filters .= '</form>';
@@ -343,6 +344,11 @@ function get_task_list() {
 	if(isset($_GET['tyyppi']) && !empty($_GET['tyyppi'])) {
 		$sql .= ' AND tasks.task_type = ?';
 		$params[] = $_GET['tyyppi'];
+	}
+	
+	if(isset($_GET['kisa']) && !empty($_GET['kisa'])) {
+		$sql .= ' AND tasks.contest = ?';
+		$params[] = $_GET['kisa'];
 	}
 	
 	if(isset($_GET['s']) && !empty($_GET['s'])) {
@@ -528,6 +534,17 @@ function get_options($field) {
 
 		while($cat = $query->fetch()) {
 			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['tyyppi']) && $_GET['tyyppi'] == $cat['id']) ? ' selected' : '') . '>' . $cat['name'] . '</option>';
+		}
+
+	} elseif($field == 'contest') {
+
+		$query = $db->prepare('SELECT id, name FROM contests ORDER BY name');
+		$query->execute();
+
+		$return .= '<option disabled' . (!isset($_GET['kisa']) ? ' selected' : '') . '>Kilpailu</option>';
+
+		while($cat = $query->fetch()) {
+			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['kisa']) && $_GET['kisa'] == $cat['id']) ? ' selected' : '') . '>' . $cat['name'] . '</option>';
 		}
 
 	}

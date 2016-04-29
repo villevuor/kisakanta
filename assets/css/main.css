@@ -171,7 +171,7 @@ input, select, button, textarea {
 }
 
 select {
-	width: 180px;
+	width: 134px;
 }
 
 input[type="text"], input[type="email"], textarea {
@@ -209,7 +209,7 @@ label {
 }
 
 .form-group {
-	width: 200px;
+	width: 149px;
 	float: left;
 	margin: 0 0 1em;
 }
