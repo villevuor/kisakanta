@@ -26,7 +26,11 @@ function page_setup() {
 			break;
 		case 'tietoa':
 			$page['title'] = 'Tietoa';
-			$page['content'] = 'Tietoa palvelusta';
+			$page['content'] = '<p>Kisakanta on Espoon Partiotuen pystyttämä ja ylläpitämä pankki partiotaitokisojen rastikäskyille. Kiskan tarkoituksena on säilöä kootusti kisoihin tuotettua materiaalia ja tarjota vinkkejä uusia kisoja suunnitteleville. Palvelu on tarkoitettu kaikille partiotaitokilpailuille ympäri Suomen, eikä pelkästään EPT:n omille kisoille.</p>';
+			$page['content'] .= '<p>Kisakanta on perustettu vuonna 2010. Vuoden 2016 aikana se joutui hakkeroinnin kohteeksi, mutta materiaali saatiin pelastettua ja palvelu palasi entistä ehompana toukokuussa 2016.</p>';
+			$page['content'] .= '<h3>Materiaali on tervetullutta</h3><p>Lähetä järjestämäsi kilpailun tehtäväkäskyt ja muu haluamasi materiaali meille! Arkistointi pitää kilpailun tärkeimmän sisällön eli tehtäväkäskyt tallessa, ja helpottaa muita partiokisoja järjestäviä antamalla inspiraatiota ja vinkkejä. Samalla ylläpidät osaltasi suomalaista partiotaitokilpailukulttuuria.</p><p>Aineiston lähetys on tehty mahdollisimman helpoksi. <a href="/laheta">Katso tarkemmat ohjeet ja lähetä materiaalia täällä.</a></p>';
+			$page['content'] .= '<h3>Yhteystiedot</h3><p>Voit ottaa yhteyttä Kisakantaan liittyvissä asioissa <a href="/palaute">palautelomakkeella</a>.</p>';
+
 			break;
 		case 'laheta':
 			$page['title'] = 'Lähetä kilpailusi';
