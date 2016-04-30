@@ -111,6 +111,13 @@ a {
 		bottom: 2em;
 	}
 
+	#ept {
+		position: absolute;
+		bottom: 4em;
+		width: 180px;
+	}
+
+
 #content {
 	margin-left: 300px;
 	padding: 3em 4em;
@@ -244,7 +251,6 @@ img {
 	.column ul, .column ol {
 		padding-left: 20px;
 	}
-
 
 /* ==========================================================================
    Media Queries
