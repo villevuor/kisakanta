@@ -114,16 +114,11 @@ function get_header() {
 						<li><a href="/tehtavat">Tehtävät</a></li>
 						<li><a href="/laheta">Lähetä kilpailusi</a></li>
 						<li><a href="/tietoa">Tietoa</a></li>
+						<li><a href="/palaute">Palaute</a></li>
 					</ul>
 				</nav>
 
 				<a href="http://ept.fi" target="_blank" id="ept"><img src="/assets/img/EPT_logo.png" alt="Espoon Partiotuki ry"></a>
-
-				<nav class="secondary" role="secondary">
-					<ul>
-						<li><a href="/palaute">Palaute</a></li>
-					</ul>
-				</nav>
 
 			</header>
 
