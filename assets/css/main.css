@@ -111,6 +111,12 @@ a {
 		bottom: 2em;
 		width: 180px;
 	}
+	
+	@media (max-height: 549px) {
+		#ept {
+			display: none;
+		}
+	}
 
 
 #content {
