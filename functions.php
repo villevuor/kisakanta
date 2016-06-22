@@ -173,9 +173,22 @@ function get_contest($slug) {
 		$page['content'] .= (empty($contest['organizer']) ? '' : '<br><strong>Järjestäjä:</strong> ' . (empty($contest['organizer_url']) ? $contest['organizer'] : '<a href="' . $contest['organizer_url'] . '" target="_blank">' . $contest['organizer'] . '</a>'));
 		$page['content'] .= (empty($contest['contact']) ? '' : '<br><strong>Yhteyshenkilö:</strong> ' . $contest['contact']);
 		$page['content'] .= '</p>';
-
+		
 		$page['content'] .= get_task_list_by_contest($contest['id']);
 
+		$query = $db->prepare('SELECT file, directory, name FROM attachments WHERE contest = ?');
+		$query->execute(array($contest['id']));
+
+		if($query->rowCount() > 0) {
+			$page['content'] .= '<h3>Tiedostot</h3><ul>';
+			
+			while($attachment = $query->fetch()) {
+				$page['content'] .= '<li><a href="' . $attachment['directory'] . $attachment['file'] . '">' . ucfirst($attachment['name']) . '</a></li>';
+			}
+			
+			$page['content'] .= '</ul>';
+		}
+		
 		$page['content'] .= (empty($contest['date_added']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($contest['date_added'])) . '</p>');
 
 	} else {
@@ -248,6 +261,19 @@ function get_task($id) {
 			$page['content'] .= '<p>' . nl2br($task['attachments'], false) . '</p>';
 		}
 
+		$query = $db->prepare('SELECT file, directory, name FROM attachments WHERE task = ?');
+		$query->execute(array($id));
+		
+		if($query->rowCount() > 0) {
+			$page['content'] .= '<h4>Tiedostot</h4><ul>';
+			
+			while($attachment = $query->fetch()) {
+				$page['content'] .= '<li><a href="' . $attachment['directory'] . $attachment['file'] . '">' . ucfirst($attachment['name']) . '</a></li>';
+			}
+			
+			$page['content'] .= '</ul>';
+		}
+		
 		$query = $db->prepare('SELECT id FROM tasks WHERE contest = ? AND name = ?');
 		$query->execute(array($task['contest'], $task['name']));
 
