@@ -30,11 +30,10 @@ function page_setup() {
 			$page['content'] .= '<p>Kisakanta on perustettu vuonna 2010. Vuoden 2016 aikana se joutui hakkeroinnin kohteeksi, mutta materiaali saatiin pelastettua ja palvelu palasi entistä ehompana toukokuussa 2016.</p>';
 			$page['content'] .= '<h3>Materiaali on tervetullutta</h3><p>Lähetä järjestämäsi kilpailun tehtäväkäskyt ja muu haluamasi materiaali meille! Arkistointi pitää kilpailun tärkeimmän sisällön eli tehtäväkäskyt tallessa, ja helpottaa muita partiokisoja järjestäviä antamalla inspiraatiota ja vinkkejä. Samalla ylläpidät osaltasi suomalaista partiotaitokilpailukulttuuria.</p><p>Aineiston lähetys on tehty mahdollisimman helpoksi. <a href="/laheta">Katso tarkemmat ohjeet ja lähetä materiaalia täällä.</a></p>';
 			$page['content'] .= '<h3>Yhteystiedot</h3><p>Voit ottaa yhteyttä Kisakantaan liittyvissä asioissa <a href="/palaute">palautelomakkeella</a>.</p>';
-
 			break;
 		case 'laheta':
 			$page['title'] = 'Lähetä kilpailusi';
-			$page['content'] = 'Osallistu arkistointiin';
+			$page['content'] = get_contest_form();
 			break;
 		case 'palaute':
 			$page['title'] = 'Palaute';
@@ -626,6 +625,68 @@ function get_front_page() {
 	return $front_page;
 }
 
+function get_contest_form() {
+	global $db, $config;
+
+	$helper = '<h3>Tehtäväkäskyjen ja muun materiaalin toimitus</h3>';
+	$helper .= '<p>Toimita tehtäväkäskyt, tehtäväluettelo (esim. kisakutsun osana) ja muut materiaalit <a href="https://www.dropbox.com/request/IjBGZsoG8EbViqeLjzi5" target="_blank">Dropbox-kansioomme</a>.</p>';
+	$helper .= '<p>Toimitathan materaalin mahdollisimman selkeässä muodossa (esim. ei työversioita).</p>';
+	$helper .= '<p>Voit liittää mukaan myös muita tiedostoja, kuten kilpailukutsun, arvostelupöytäkirjoja tai kilpailun logon. Vaiva ei nyt ole suuri, mutta 10 vuoden kuluttua on kiva tarkastella kisoja, joissa on enemmän materiaalia. :)</p>';
+	$helper .= '<p>Suurkiitos kaikille materiaalia toimittaville!</p>';
+
+	if(isset($_POST['name']) && !empty(trim($_POST['name']))) {
+	
+		$feedback = 'Kilpailun nimi: ' . $_POST['name'] . PHP_EOL;
+		$feedback .= 'Kilpailun kotisivut: ' . $_POST['homepage'] . PHP_EOL;
+		$feedback .= 'Ajankohta: ' . $_POST['date'] . PHP_EOL;
+		$feedback .= 'Kilpailualue: ' . $_POST['area'] . PHP_EOL;
+		$feedback .= 'Kilpailun teema/aihe: ' . $_POST['theme'] . PHP_EOL;
+		$feedback .= 'Järjestäjä (organisaatio): ' . $_POST['organizer'] . PHP_EOL;
+		$feedback .= 'Järjestäjän kotisivut: ' . $_POST['organizer_url'] . PHP_EOL;
+		$feedback .= 'Yhteyshenkilö: ' . $_POST['person'] . PHP_EOL;
+		$feedback .= 'Lähettäjän sähköposti: ' . $_POST['email'] . PHP_EOL;
+	
+		$query = $db->prepare('INSERT INTO feedbacks (feedback, name, email, ip) VALUES (?, ?, ?, ?)');
+		$query->execute(array($feedback, (empty($_POST['person']) ? null : $_POST['person']), (empty($_POST['email']) ? null : $_POST['email']), $_SERVER['REMOTE_ADDR']));
+
+		$client = new \Http\Adapter\Guzzle6\Client();
+		
+		$mailgun = new Mailgun($config['mailgun']['apikey'], $client);
+
+		$mailgun->sendMessage($config['mailgun']['domain'],
+			array(
+				'from'    => 'noreply@kisakanta.fi',
+				'to'      => 'villevuor@gmail.com',
+				'subject' => 'Uusi kilpailu Kisakantaan: ' . $_POST['name'],
+				'text'    => $feedback,
+			)
+		);
+
+		$form = '<p>Kiitos viestistäsi! Muistathan vielä lähettää tehtäväkäskyt ja muut haluamasi materiaalit alla olevien ohjeiden mukaan.</p>';
+		$form .= $helper;
+	
+	} else {
+	
+		$form = '<p>Voit lähettää kilpailusi palveluun tällä lomakkeella. Täytä ensin kilpailun perustiedot, ja lue sen jälkeen ohjeet tehtäväkäskyjen lähetyksestä.</p>';
+		$form .= '<form action="/laheta" method="post" class="feedback">';
+		$form .= '<input type="text" placeholder="Kilpailun nimi" name="name" required>';
+		$form .= '<input type="text" placeholder="Kilpailun kotisivut" name="homepage">';
+		$form .= '<input type="text" placeholder="Ajankohta" name="date" required>';
+		$form .= '<input type="text" placeholder="Kilpailualue" name="area" required>';
+		$form .= '<input type="text" placeholder="Kilpailun teema/aihe" name="theme">';
+		$form .= '<input type="text" placeholder="Järjestäjä (organisaatio)" name="organizer" required>';
+		$form .= '<input type="text" placeholder="Järjestäjän kotisivut" name="organizer_url">';
+		$form .= '<input type="text" placeholder="Yhteyshenkilö" name="person" required>';
+		$form .= '<input type="email" placeholder="Lähettäjän sähköposti (ei julkaista)" name="email" required>';
+		$form .= '<input type="submit" value="Lähetä">';
+		$form .= '</form>';
+		
+		$form .= $helper;
+	
+	}
+
+	return $form;
+}
 
 function get_feedback_form() {
 	global $db, $config;
