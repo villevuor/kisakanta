@@ -17,6 +17,9 @@ function page_setup() {
 	global $page;
 
 	$path = (!isset($_GET['path']) || empty($_GET['path']) ? '' : $_GET['path']);
+	
+	// Remove first slash from path
+	$path = substr($path, 1);
 
 	switch ($path) {
 		case '':
