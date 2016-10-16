@@ -10,10 +10,10 @@
 
 // Menu icon click action
 document.getElementById('menu-toggle').onclick = function(){
-	document.getElementById('site-header').classList.toggle('active');
+	document.body.classList.toggle('show-menu');
 };
 
 // Make menu appear / by swiping on mobile
 var hammer = new Hammer(document.body);
-hammer.on('swiperight', function(ev) { document.getElementById('site-header').classList.add('active'); });
-hammer.on('swipeleft', function(ev) { document.getElementById('site-header').classList.remove('active'); });
+hammer.on('swiperight', function(ev) { document.body.classList.add('show-menu'); });
+hammer.on('swipeleft', function(ev) { document.body.classList.remove('show-menu'); });
