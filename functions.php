@@ -442,7 +442,7 @@ function get_task_list_by_contest($contest_id) {
 		$count = count($_tasks);
 
 		for($i = 0; $i < $count; $i++) {
-			if($_tasks[$i]['name'] === $_tasks[$i + 1]['name']) {
+			if(isset($_tasks[$i + 1]['name']) && $_tasks[$i]['name'] === $_tasks[$i + 1]['name']) {
 				$points_by_series[$_tasks[$i + 1]['id']] = $points_by_series[$_tasks[$i]['id']] + $points_by_series[$_tasks[$i + 1]['id']];
 				unset($_tasks[$i]);
 			}
