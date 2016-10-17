@@ -2,3 +2,5 @@
 *.css.map
 config.php
 vendor
+
+files/*
