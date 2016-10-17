@@ -163,16 +163,21 @@ function get_contest($slug) {
 		$page['content'] .= (empty($contest['contact']) ? '' : '<br><strong>Yhteyshenkilö:</strong> ' . $contest['contact']);
 		$page['content'] .= '</p>';
 		
+		if ( $contest['is_punkku'] ) {
+			$page['content'] .= punkku_series_notice();
+		}
+		
 		$page['content'] .= get_task_list_by_contest($contest['id']);
 
-		$query = $db->prepare('SELECT file, directory, name FROM attachments WHERE contest = ?');
+		echo $contest['id'];
+		$query = $db->prepare('SELECT file, name FROM attachments WHERE contest = ?');
 		$query->execute(array($contest['id']));
 
 		if($query->rowCount() > 0) {
 			$page['content'] .= '<h3>Tiedostot</h3><ul>';
 			
 			while($attachment = $query->fetch()) {
-				$page['content'] .= '<li><a href="' . $attachment['directory'] . $attachment['file'] . '">' . ucfirst($attachment['name']) . '</a></li>';
+				$page['content'] .= '<li><a href="' . $attachment['file'] . '">' . ucfirst($attachment['name']) . '</a></li>';
 			}
 			
 			$page['content'] .= '</ul>';
@@ -734,6 +739,10 @@ function get_error($code = 404, $msg = 'Sivua ei löytynyt.') {
 
 function format_date($year, $start_date = '', $end_date = '') {
 	return (empty($start_date) ? $year : (empty($end_date) ? date('j.n.Y', strtotime($start_date)) : date((date('Y', strtotime($start_date)) == date('Y', strtotime($end_date)) ? (date('m', strtotime($start_date)) == date('m', strtotime($end_date)) ? 'j.' : 'j.n.') : 'j.n.Y'), strtotime($start_date)) . '–' . date('j.n.Y', strtotime($end_date))));
+}
+
+function punkku_series_notice() {
+	return '<div class="alternative punkku"><p>Espoon Punasessa tyttöjen sarjojen nimet ovat erilaiset kuin valtakunnallisissa kisoissa. 14-18-vuotiaiden tyttöjen sarja on <em>keltainen</em> ja yli 18-vuotiaiden naisten sarja taas <em>sininen</em>.</p></div>';
 }
 
 ?>

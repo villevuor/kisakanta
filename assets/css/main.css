@@ -148,7 +148,7 @@ a {
 	background: #e6e6e6;
 	font-size: 0.9em;
 	padding: 1em 2em;
-	margin-top: 4em;
+	margin: 2em 0;
 }
 
 	.alternative p {
@@ -157,6 +157,10 @@ a {
 
 	.alternative ul {
 		color: #616161;
+	}
+	
+	.alternative.punkku p {
+		font-weight: normal;
 	}
 
 table {
