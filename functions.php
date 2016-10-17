@@ -146,14 +146,16 @@ function get_content() {
 function get_contest($slug) {
 	global $db, $page;
 
-	$query = $db->prepare('SELECT * FROM contests WHERE slug = ?');
+	$query = $db->prepare('SELECT contests.*, attachments.file AS logo FROM contests LEFT JOIN attachments ON (contests.logo IS NOT NULL AND contests.logo = attachments.id) WHERE slug = ?');
 	$query->execute(array($slug));
 
 	if($query->rowCount() > 0) {
 		$contest = $query->fetch();
 		$page['title'] = $contest['name'];
-		
-		$page['content'] = '<p>';
+
+		$page['content'] = (isset($contest['logo']) ? '<img src="' . $contest['logo'] . '" alt="Kilpailun logo" class="logo">' : '');
+
+		$page['content'] .= '<p>';
 		$page['content'] .= (empty($contest['year']) ? '' : '<strong>Ajankohta:</strong> ' . format_date($contest['year'], $contest['start_date'], $contest['end_date']));
 		$page['content'] .= (empty($contest['location']) ? '' : '<br><strong>Kilpailualue:</strong> ' . $contest['location']);
 		$page['content'] .= (empty($contest['theme']) ? '' : '<br><strong>Teema:</strong> ' . $contest['theme']);
@@ -248,14 +250,14 @@ function get_task($id) {
 			$page['content'] .= '<p>' . nl2br($task['attachments'], false) . '</p>';
 		}
 
-		$query = $db->prepare('SELECT file, directory, name FROM attachments WHERE task = ?');
+		$query = $db->prepare('SELECT file, name FROM attachments WHERE task = ?');
 		$query->execute(array($id));
 		
 		if($query->rowCount() > 0) {
 			$page['content'] .= '<h4>Tiedostot</h4><ul>';
 			
 			while($attachment = $query->fetch()) {
-				$page['content'] .= '<li><a href="' . $attachment['directory'] . $attachment['file'] . '">' . ucfirst($attachment['name']) . '</a></li>';
+				$page['content'] .= '<li><a href="' . $attachment['file'] . '">' . ucfirst($attachment['name']) . '</a></li>';
 			}
 			
 			$page['content'] .= '</ul>';

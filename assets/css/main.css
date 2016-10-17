@@ -314,6 +314,10 @@ img {
 	table tr td:first-child, table tr th:first-child {
 		display: block;
 	}
+	
+	.logo {
+		float: right;
+	}
 }
 
 @media print,
