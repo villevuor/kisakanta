@@ -198,7 +198,7 @@ textarea {
 input[type="submit"], input[type="reset"] {
 	display: inline-block;
 	-webkit-appearance: none;
-	background: #45759E;
+	background: #8bc34a;
 	padding: 5px 10px;
 	height: 40px;
 	border: 0;
@@ -472,7 +472,7 @@ img {
 	font-style: normal;
 }
 
-@/*font-face {
+/*@font-face {
 	font-family: 'PT Serif';
 	src: url('../fonts/PTF76F-webfont.eot');
 	src: url('../fonts/PTF76F-webfont.eot?#iefix') format('embedded-opentype'),
