@@ -17,8 +17,8 @@
  * configuration options there instead of here. That way, you won't have to edit
  * the configuration again if you download the new version of `deploy.php`.
  */
-if (file_exists('../deploy-config.php')) {
-	define('CONFIG_FILE', '../deploy-config.php');
+if (file_exists('../config.php')) {
+	define('CONFIG_FILE', '../config.php');
 	require_once CONFIG_FILE;
 } else {
 	define('CONFIG_FILE', __FILE__);
