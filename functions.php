@@ -444,7 +444,7 @@ function get_task_list_by_contest($contest_id) {
 				foreach ($task_versions as $id => $series) {
 					$task_version_links .= ' / <a href="/tehtavat/' . $id . '">' . $series . '</a>';
 				}
-				$task_version_links = ' <small>(' . substr($task_version_links, 3) . ')</small>';
+				$task_version_links = ' (' . substr($task_version_links, 3) . ')';
 			}
 
 
