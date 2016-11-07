@@ -17,7 +17,7 @@ function page_setup() {
 	global $page;
 
 	$path = (!isset($_GET['path']) || empty($_GET['path']) ? '' : $_GET['path']);
-	
+
 	// Remove first slash from path
 	$path = substr($path, 1);
 
@@ -73,7 +73,7 @@ function get_header() {
 			<title><?php echo $page['title']; ?></title>
 			<meta name="description" content="">
 			<meta name="viewport" content="width=device-width, initial-scale=1">
-			
+
 			<meta name="robots" content="noindex, nofollow">
 
 			<link rel="stylesheet" href="/assets/css/main.css" async>
@@ -146,12 +146,12 @@ function get_content() {
 function get_contest($slug) {
 	global $db, $page;
 
-	$query = $db->prepare('SELECT contests.*, attachments.file AS logo FROM contests LEFT JOIN attachments ON (contests.logo IS NOT NULL AND contests.logo = attachments.id) WHERE slug = ?');
+	$query = $db->prepare('SELECT contests.*, files.location AS logo FROM contests LEFT JOIN files ON (contests.logo IS NOT NULL AND contests.logo = files.id) WHERE slug = ?');
 	$query->execute(array($slug));
 
 	if($query->rowCount() > 0) {
 		$contest = $query->fetch();
-		$page['title'] = $contest['name'];
+		$page['title'] = $contest['title'];
 
 		$page['content'] = (isset($contest['logo']) ? '<img src="' . $contest['logo'] . '" alt="Kilpailun logo" class="logo">' : '');
 
@@ -162,27 +162,26 @@ function get_contest($slug) {
 		$page['content'] .= (empty($contest['organizer']) ? '' : '<br><strong>Järjestäjä:</strong> ' . (empty($contest['organizer_url']) ? $contest['organizer'] : '<a href="' . $contest['organizer_url'] . '" target="_blank">' . $contest['organizer'] . '</a>'));
 		$page['content'] .= (empty($contest['contact']) ? '' : '<br><strong>Yhteyshenkilö:</strong> ' . $contest['contact']);
 		$page['content'] .= '</p>';
-		
+
 		if ( $contest['is_punkku'] ) {
 			$page['content'] .= punkku_series_notice();
 		}
-		
+
 		$page['content'] .= get_task_list_by_contest($contest['id']);
 
-		echo $contest['id'];
-		$query = $db->prepare('SELECT file, name FROM attachments WHERE contest = ?');
+		$query = $db->prepare('SELECT files.location, files.title FROM files, contest_files WHERE contest_files.contest = ? AND contest_files.file = files.id');
 		$query->execute(array($contest['id']));
 
 		if($query->rowCount() > 0) {
 			$page['content'] .= '<h3>Tiedostot</h3><ul>';
-			
+
 			while($attachment = $query->fetch()) {
-				$page['content'] .= '<li><a href="' . $attachment['file'] . '">' . ucfirst($attachment['name']) . '</a></li>';
+				$page['content'] .= '<li><a href="' . $attachment['location'] . '">' . ucfirst($attachment['title']) . '</a></li>';
 			}
-			
+
 			$page['content'] .= '</ul>';
 		}
-		
+
 		$page['content'] .= (empty($contest['date_added']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($contest['date_added'])) . '</p>');
 
 	} else {
@@ -193,100 +192,67 @@ function get_contest($slug) {
 function get_task($id) {
 	global $db, $page;
 
-	$query = $db->prepare('SELECT contests.name AS contest_name, contests.slug AS contest_slug, contests.year, contests.start_date, contests.end_date, task_types.name AS type_name, categories.name AS category_name, tasks.* FROM tasks, contests, task_types, categories WHERE tasks.id = ? AND tasks.contest = contests.id AND task_types.id = tasks.task_type AND categories.id = tasks.category');
+	$query = $db->prepare('SELECT tasks.*, task_versions.*, contests.title AS contest_title, contests.slug AS contest_slug, contests.year, contests.start_date, contests.end_date, task_version_types.title AS type, task_categories.name AS category, tasks.id AS task_id FROM tasks, task_versions, contests, task_version_types, task_categories WHERE task_versions.id = ? AND task_versions.task_id = tasks.id AND tasks.contest = contests.id AND task_version_types.id = task_versions.type AND task_categories.id = tasks.category');
 	$query->execute(array($id));
 
 	if($query->rowCount() > 0) {
 		$task = $query->fetch();
-		$page['title'] = $task['name'];
+
+		$series = get_task_version_series($task['id']);
+
+		$page['title'] = $task['title'];
 		$page['content'] = '';
-		
-		$series = get_task_series($task['id']);
-		$s = array();
-		$p = array();
 
-		foreach($series as $serie) {
-			$s[] = $serie['name'];
-			$p[] = $serie['max_points'];
-		}
-
-		$p3 = $p2 = $p;
-		
-		sort($p2, SORT_NUMERIC);
-		rsort($p3, SORT_NUMERIC);
-
-		if($p2 == $p3) {
-			$max_points = 'Maksimipisteet: ' . $p[0];
-		} else {
-			$points = array();
-			
-			foreach($p as $k => $point) {
-				$points[$point][] = $s[$k];
-			}
-
-			$max_points = 'Maksimipisteet:';
-			$first = 1;
-			
-			foreach($points as $point => $serie) {
-				$max_points .= strtolower(($first ? ' ' : ', ') . $point . ' (' . implode(', ', $serie) . ')');
-				$first = 0;
-			}
-		}
-
-		$page['content'] .= '<p><strong><a href="/kisat/' . $task['contest_slug'] . '">' . $task['contest_name'] . ' ' . format_date($task['year'], $task['start_date'], $task['end_date']) . '</a></strong>';
-		$page['content'] .= '<br>' . ucfirst($task['category_name']);
-		$page['content'] .= '<br>Sarjat: ' . implode(', ', $s);
-		$page['content'] .= '<br>' . $max_points;
+		$page['content'] .= '<p><strong><a href="/kisat/' . $task['contest_slug'] . '">' . $task['contest_title'] . ' ' . format_date($task['year'], $task['start_date'], $task['end_date']) . '</a></strong>';
+		$page['content'] .= '<br>' . $task['category'];
+		$page['content'] .= '<br>Sarjat: ' . implode(', ', $series);
+		$page['content'] .= (!empty($task['max_points']) ? '<br>Maksimipisteet: ' . $task['max_points'] : '');
 		$page['content'] .= '</p>';
 
-		$page['content'] .= '<p><em>' . ucfirst($task['type_name']) . '</em></p>';
+		$page['content'] .= '<p><em>' . ucfirst($task['type']) . '</em></p>';
 
-		$page['content'] .= '<h2>' . ucfirst($task['name']) . '</h2>';
+		$page['content'] .= '<h2>' . ucfirst($task['title']) . '</h2>';
 
-		$page['content'] .= '<p>' . nl2br($task['task'], false) . '</p>';
+		$page['content'] .= '<p>' . nl2br($task['content'], false) . '</p>';
 
 		if(!empty($task['review'])) {
 			$page['content'] .= '<h4>Arvostelu</h4>';
 			$page['content'] .= '<p>' . nl2br($task['review'], false) . '</p>';
 		}
-		
+
 		if(!empty($task['attachments'])) {
 			$page['content'] .= '<h4>Liitteet</h4>';
 			$page['content'] .= '<p>' . nl2br($task['attachments'], false) . '</p>';
 		}
 
-		$query = $db->prepare('SELECT file, name FROM attachments WHERE task = ?');
+		$query = $db->prepare('SELECT files.* FROM files, task_version_files WHERE task_version_files.task_version = ? AND task_version_files.file = files.id');
 		$query->execute(array($id));
-		
+
 		if($query->rowCount() > 0) {
 			$page['content'] .= '<h4>Tiedostot</h4><ul>';
-			
-			while($attachment = $query->fetch()) {
-				$page['content'] .= '<li><a href="' . $attachment['file'] . '">' . ucfirst($attachment['name']) . '</a></li>';
+
+			while($file = $query->fetch()) {
+				$page['content'] .= '<li><a href="' . $file['location'] . '">' . ucfirst($file['title']) . '</a></li>';
 			}
-			
+
 			$page['content'] .= '</ul>';
 		}
-		
-		$query = $db->prepare('SELECT id FROM tasks WHERE contest = ? AND name = ?');
-		$query->execute(array($task['contest'], $task['name']));
+
+		$query = $db->prepare('SELECT id FROM task_versions WHERE task_id = ?');
+		$query->execute(array($task['task_id']));
 
 		if($query->rowCount() > 1) {
 			$page['content'] .= '<div class="alternative"><p>Tästä tehtävästä on olemassa erilliset versiot seuraaville sarjoille:</p><ul>';
 
 			while($alt_task = $query->fetch()) {
-				$alt_tasks[$alt_task['id']] = get_task_series($alt_task['id']);
+				$alt_tasks[$alt_task['id']] = get_task_version_series($alt_task['id'], true);
 			}
 
 			foreach($alt_tasks as $alt_task => $alt_series) {
-				$alt_series_looped = array();
-				foreach($alt_series as $alt_serie) {
-					$alt_series_looped[] = $alt_serie['name'];
-				}
 				if($alt_task == $task['id']) {
-					$page['content'] .= '<li>' . implode(', ', $alt_series_looped) . '</li>';
+					$page['content'] .= '<li>' . implode(', ', $alt_series) . '</li>';
 				} else {
-					$page['content'] .= '<li><a href="/tehtavat/' . $alt_task . '">' . implode(', ', $alt_series_looped) . '</a></li>';
+					$page['content'] .= '<li><a href="/tehtavat/' . $alt_task . '">' . implode(', ', $alt_series) . '</a></li>';
 				}
 			}
 
@@ -296,8 +262,8 @@ function get_task($id) {
 		$page['content'] .= (empty($task['date_added']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($task['date_added'])) . '</p>');
 
 		// Update views count
-		$query = $db->prepare('UPDATE tasks SET views = views + 1 WHERE id = ?');
-		$query->execute(array($task['id']));
+		$query = $db->prepare('UPDATE task_versions SET views = views + 1 WHERE id = ?');
+		$query->execute(array($id));
 
 	} else {
 		get_error(404);
@@ -307,26 +273,28 @@ function get_task($id) {
 function get_contest_list() {
 	global $db;
 
-	$query = $db->prepare('SELECT contests.*, contest_types.name AS type FROM contests, contest_types WHERE contests.contest_type = contest_types.id ORDER BY contests.year DESC');
+	$query = $db->prepare('SELECT * FROM contests ORDER BY contests.year DESC');
 	$query->execute();
 
 	if($query->rowCount() > 0) {
 
 		while($contest = $query->fetch()) {
-			$contests_by_type[$contest['type']][] = $contest;
+			$contests[$contest['category']][] = $contest;
 		}
 
 		$list = '';
 
-		foreach($contests_by_type as $type => $contests) {
-			$list .= '<h3>' . $type . '</h3>';
-			$list .= '<ul class="contests">';	
+		foreach(get_contest_categories() as $category => $subcategories) {
+			$list .= '<h2>' . $category . '</h2>';
 
-			foreach($contests as $contest) {
-				$list .= '<li><a href="/kisat/' . $contest['slug'] . '">' . $contest['name'] . '</a> <span class="meta">' . format_date($contest['year'], $contest['start_date'], $contest['end_date']) . ' ' . $contest['location'] . '</span></li>';
+			foreach($subcategories as $title => $id) {
+				$list .= '<h4>' . $title . '</h4>';
+				$list .= '<ul class="contests">';
+				foreach($contests[$id] as $contest) {
+					$list .= '<li><a href="/kisat/' . $contest['slug'] . '">' . $contest['title'] . '</a> <span class="meta">' . format_date($contest['year'], $contest['start_date'], $contest['end_date']) . ' ' . $contest['location'] . '</span></li>';
+				}
+				$list .= '</ul>';
 			}
-
-			$list .= '</ul>';
 		}
 
 		return $list;
@@ -336,24 +304,51 @@ function get_contest_list() {
 	}
 }
 
+function get_contest_categories() {
+	global $db;
+
+	$query = $db->prepare('SELECT * FROM contest_categories ORDER BY `order` ASC');
+	$query->execute();
+
+	if($query->rowCount() > 0) {
+		$cats = $query->fetchAll();
+
+		$parent = $return = array();
+
+		foreach($cats as $cat) {
+			if(empty($cat['parent'])) {
+				$parent[$cat['id']] = $cat['title'];
+			}
+		}
+
+		foreach($cats as $cat) {
+			if(!empty($cat['parent'])) {
+				$return[$parent[$cat['parent']]][$cat['title']] = $cat['id'];
+			}
+		}
+
+		return $return;
+	}
+
+	return array();
+}
+
 function get_task_list() {
 	global $db;
 
 	$filters = '<h3>Hae tehtävistä</h3><form action="/tehtavat" method="get" class="filters">';
 	$filters .= '<div class="form-group"><select name="kategoria">' . get_options('category') . '</select></div>';
 	$filters .= '<div class="form-group"><select name="sarja">' . get_options('serie') . '</select></div>';
-	$filters .= '<div class="form-group"><select name="tyyppi">' . get_options('type') . '</select></div>';
 	$filters .= '<div class="form-group"><select name="kisa">' . get_options('contest') . '</select></div>';
 	$filters .= '<div class="form-group block"><input type="text" name="s" value="' . (!empty($_GET['s']) ? $_GET['s'] : '') . '" placeholder="Hae tehtävistä"></div>';
 	$filters .= '<input type="submit" value="Hae"><input type="reset" value="Tyhjennä kentät">';
 	$filters .= '</form>';
 
-	$sql = 'SELECT * FROM tasks WHERE';
+	$sql = 'SELECT task_versions.id, tasks.title FROM tasks, task_versions WHERE tasks.id = task_versions.task_id';
 	$params = array();
 
-
 	if(isset($_GET['sarja']) && !empty($_GET['sarja'])) {
-		$sql = 'SELECT tasks.* FROM tasks, task_series, contest_series WHERE tasks.id = task_series.task AND contest_series.series = ? AND task_series.contest_series = contest_series.id';
+		$sql = 'SELECT task_versions.id, tasks.title FROM tasks, task_versions, task_version_series WHERE tasks.id = task_versions.task_id AND task_versions.id = task_version_series.task_version AND task_version_series.series = ?';
 		$params[] = $_GET['sarja'];
 	}
 
@@ -361,28 +356,24 @@ function get_task_list() {
 		$sql .= ' AND tasks.category = ?';
 		$params[] = $_GET['kategoria'];
 	}
-	
-	if(isset($_GET['tyyppi']) && !empty($_GET['tyyppi'])) {
-		$sql .= ' AND tasks.task_type = ?';
-		$params[] = $_GET['tyyppi'];
-	}
-	
+
 	if(isset($_GET['kisa']) && !empty($_GET['kisa'])) {
 		$sql .= ' AND tasks.contest = ?';
 		$params[] = $_GET['kisa'];
 	}
-	
+
 	if(isset($_GET['s']) && !empty($_GET['s'])) {
-		$sql .= ' AND (tasks.name LIKE ? OR tasks.task LIKE ?)';
+		$sql .= ' AND (tasks.name LIKE ? OR task_versions.content LIKE ? OR task_versions.tags LIKE ?)';
+		$params[] = '%' . $_GET['s'] . '%';
 		$params[] = '%' . $_GET['s'] . '%';
 		$params[] = '%' . $_GET['s'] . '%';
 	}
 
-	$sql .= ' GROUP BY tasks.name ORDER BY tasks.date_added DESC';
+	$sql .= ' GROUP BY task_versions.task_id ORDER BY tasks.title ASC';
 	$sql = str_replace('WHERE AND', 'WHERE', $sql);
 
 	if(empty($params)) {
-		$sql = 'SELECT * FROM tasks GROUP BY name ORDER BY date_added DESC LIMIT 20';
+		$sql = 'SELECT tasks.title, task_versions.id FROM tasks, task_versions WHERE tasks.id = task_versions.task_id ORDER BY task_versions.date_added DESC LIMIT 20';
 		$header = 'Viimeksi lisätyt tehtävät';
 	}
 
@@ -399,7 +390,7 @@ function get_task_list() {
 		$tasks = '<ul>';
 
 		while($task = $query->fetch()) {
-			$tasks .= '<li><a href="/tehtavat/' . $task['id'] . '">' . $task['name'] . '</a></li>';
+			$tasks .= '<li><a href="/tehtavat/' . $task['id'] . '">' . $task['title'] . '</a></li>';
 		}
 
 		$tasks .= '</ul>';
@@ -414,58 +405,50 @@ function get_task_list() {
 function get_task_list_by_contest($contest_id) {
 	global $db;
 
-	$query = $db->prepare('SELECT * FROM tasks WHERE contest = ? ORDER BY name ASC');
+	$query = $db->prepare('SELECT tasks.id, tasks.title, task_versions.id AS task_version_id, task_versions.max_points, series.id AS series, series.short_title AS series_short FROM tasks, task_versions, task_version_series, series WHERE tasks.contest = ? AND task_versions.task_id = tasks.id AND task_version_series.task_version = task_versions.id AND task_version_series.series = series.id ORDER BY tasks.title ASC, series.order ASC');
 	$query->execute(array($contest_id));
 
-	
+
 	if($query->rowCount() > 0) {
+
+		while($task = $query->fetch()) {
+			$_tasks[$task['id']][] = $task;
+		}
 
 		$all_series_in_contest = get_contest_series($contest_id);
 
-		$query2 = $db->prepare('SELECT task_series.task, task_series.max_points, contest_series.series FROM task_series, contest_series WHERE contest_series.contest = ? AND task_series.contest_series = contest_series.id');
-		$query2->execute(array($contest_id));
-
-		$points_by_series = array();
-
-		if($query2->rowCount() > 0) {
-			while($row = $query2->fetch()) {
-				$points_by_series[$row['task']][$row['series']] = $row['max_points'];
-			}
-		}
-		
 		$tasks = '<table><thead><tr>';
 		$tasks .= '<th>Tehtävä</th>';
 
-		foreach($all_series_in_contest as $serie) {
-			$tasks .= '<th>' . ucfirst($serie['name']) . '</th>';
+		$series = get_contest_series($contest_id);
+
+		foreach($series as $serie) {
+			$tasks .= '<th>' . ucfirst($serie['title']) . '</th>';
+			$task_versions_empty[$serie['id']] = '<td></td>';
 		}
 
 		$tasks .= '</tr></thead><tbody>';
 
-		while($task = $query->fetch()) {
-			$_tasks[] = $task;
-		}
-
-		$count = count($_tasks);
-
-		for($i = 0; $i < $count; $i++) {
-			if(isset($_tasks[$i + 1]['name']) && $_tasks[$i]['name'] === $_tasks[$i + 1]['name']) {
-				$points_by_series[$_tasks[$i + 1]['id']] = $points_by_series[$_tasks[$i]['id']] + $points_by_series[$_tasks[$i + 1]['id']];
-				unset($_tasks[$i]);
-			}
-		}
-
 		foreach($_tasks as $task) {
-			$tasks .= '<tr><td><a href="/tehtavat/' . $task['id'] . '">' . $task['name'] . '</a></td>';
 
-			foreach($all_series_in_contest as $serie) {
-				if(isset($points_by_series[$task['id']][$serie['id']])) {
-					$tasks .= '<td>' . $points_by_series[$task['id']][$serie['id']] . '</td>';
-				} else {
-					$tasks .= '<td></td>';
-				}
+			$task_versions = array();
+			$task_version_links = '';
+			$task_version_points = $task_versions_empty;
+
+			foreach($task as $task_version) {
+				$task_versions[$task_version['task_version_id']] = (!isset($task_versions[$task_version['task_version_id']]) ? $task_version['series_short'] : $task_versions[$task_version['task_version_id']] . $task_version['series_short']);
+				$task_version_points[$task_version['series']] = '<td>' . (empty($task_version['max_points']) ? '–' : $task_version['max_points']) . '</td>';
 			}
-			$tasks .= '</tr>';
+
+			if(count($task_versions) > 1) {
+				foreach ($task_versions as $id => $series) {
+					$task_version_links .= ' / <a href="/tehtavat/' . $id . '">' . $series . '</a>';
+				}
+				$task_version_links = ' <small>(' . substr($task_version_links, 3) . ')</small>';
+			}
+
+
+			$tasks .= '<tr><td><a href="/tehtavat/' . $task[0]['task_version_id'] . '">' . $task[0]['title'] . '</a>' . $task_version_links . '</td>' . implode($task_version_points) . '</tr>';
 		}
 
 		$tasks .= '</tbody></table>';
@@ -480,38 +463,30 @@ function get_task_list_by_contest($contest_id) {
 function get_contest_series($contest_id) {
 	global $db;
 
-	$query = $db->prepare('SELECT series.name, series.short_name, series.id FROM series, contest_series WHERE contest_series.contest = ? AND contest_series.series = series.id ORDER BY series.`order`');
+	$query = $db->prepare('SELECT DISTINCT series.title, series.short_title, series.id FROM series, tasks, task_versions, task_version_series WHERE tasks.contest = ? AND tasks.id = task_versions.task_id AND task_versions.id = task_version_series.task_version AND task_version_series.series = series.id ORDER BY series.`order`');
 	$query->execute(array($contest_id));
 
 	if($query->rowCount() > 0) {
-		
-		$series = array();
-
-		while($serie = $query->fetch()) {
-			$series[$serie['id']] = array('name' => $serie['name'], 'short_name' => $serie['short_name'], 'id' => $serie['id']);
-		}
-		
-		return $series;
-
+		return $query->fetchAll();
 	} else {
 		return array();
 	}
 }
 
-function get_task_series($task_id) {
+function get_task_version_series($task_version_id, $long = false) {
 	global $db;
 
-	$query = $db->prepare('SELECT series.name, task_series.max_points FROM series, task_series, contest_series WHERE task_series.task = ? AND contest_series.id = task_series.contest_series AND contest_series.series = series.id ORDER BY series.`order`');
-	$query->execute(array($task_id));
+	$query = $db->prepare('SELECT series.short_title, series.title FROM series, task_version_series WHERE task_version_series.task_version = ? AND task_version_series.series = series.id ORDER BY series.`order`');
+	$query->execute(array($task_version_id));
 
 	if($query->rowCount() > 0) {
-		
+
 		$tasks = array();
 
 		while($task = $query->fetch()) {
-			$tasks[] = array('name' => $task['name'], 'max_points' => $task['max_points']);
+			$tasks[] = ($long ? $task['title'] : $task['short_title']);
 		}
-		
+
 		return $tasks;
 
 	} else {
@@ -526,7 +501,7 @@ function get_options($field) {
 
 	if($field == 'category') {
 
-		$query = $db->prepare('SELECT * FROM categories ORDER BY name');
+		$query = $db->prepare('SELECT * FROM task_categories ORDER BY name');
 		$query->execute();
 
 		$return .= '<option disabled' . (!isset($_GET['kategoria']) ? ' selected' : '') . '>Kategoria</option>';
@@ -537,35 +512,24 @@ function get_options($field) {
 
 	} elseif($field == 'serie') {
 
-		$query = $db->prepare('SELECT * FROM series ORDER BY name');
+		$query = $db->prepare('SELECT * FROM series ORDER BY title');
 		$query->execute();
 
 		$return .= '<option disabled' . (!isset($_GET['serie']) ? ' selected' : '') . '>Sarja</option>';
 
 		while($cat = $query->fetch()) {
-			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['sarja']) && $_GET['sarja'] == $cat['id']) ? ' selected' : '') . '>' . $cat['name'] . '</option>';
-		}
-
-	} elseif($field == 'type') {
-
-		$query = $db->prepare('SELECT * FROM task_types ORDER BY name');
-		$query->execute();
-
-		$return .= '<option disabled' . (!isset($_GET['tyyppi']) ? ' selected' : '') . '>Tehtävätyyppi</option>';
-
-		while($cat = $query->fetch()) {
-			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['tyyppi']) && $_GET['tyyppi'] == $cat['id']) ? ' selected' : '') . '>' . $cat['name'] . '</option>';
+			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['sarja']) && $_GET['sarja'] == $cat['id']) ? ' selected' : '') . '>' . $cat['title'] . '</option>';
 		}
 
 	} elseif($field == 'contest') {
 
-		$query = $db->prepare('SELECT id, name FROM contests ORDER BY name');
+		$query = $db->prepare('SELECT id, title FROM contests ORDER BY title');
 		$query->execute();
 
 		$return .= '<option disabled' . (!isset($_GET['kisa']) ? ' selected' : '') . '>Kilpailu</option>';
 
 		while($cat = $query->fetch()) {
-			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['kisa']) && $_GET['kisa'] == $cat['id']) ? ' selected' : '') . '>' . $cat['name'] . '</option>';
+			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['kisa']) && $_GET['kisa'] == $cat['id']) ? ' selected' : '') . '>' . $cat['title'] . '</option>';
 		}
 
 	}
@@ -586,31 +550,31 @@ function get_front_page() {
 	$query->execute();
 	$contest_count = $query->fetch()['count'];
 
-	$query = $db->prepare('SELECT COUNT(DISTINCT contest, name) as count FROM tasks');
+	$query = $db->prepare('SELECT COUNT(*) as count FROM tasks');
 	$query->execute();
 	$task_count = $query->fetch()['count'];
 
 	$front_page .= '<p>Kisakannasta löytyy tällä hetkellä <a href="/kisat">' . $contest_count . ' kilpailua</a> ja <a href="/tehtavat">' . $task_count . ' tehtävää</a>. Osallistu Kisakannan arkistointiin <a href="laheta">lähettämällä oma kilpailusi palveluun</a>!';
 
-	$query = $db->prepare('SELECT name, slug, date_added FROM contests ORDER BY date_added DESC LIMIT 5');
+	$query = $db->prepare('SELECT title, slug, date_added FROM contests ORDER BY date_added DESC LIMIT 5');
 	$query->execute();
 
 	$front_page .= '<div class="column"><h3>Äskettäin lisätyt kilpailut</h3><ul>';
 
 	while($contest = $query->fetch()){
-		$front_page .= '<li><a href="/kisat/' . $contest['slug'] . '">' . $contest['name'] . '</a><span class="meta">, lisätty ' . date('j.n.Y', strtotime($contest['date_added'])) . '</span></li>';
+		$front_page .= '<li><a href="/kisat/' . $contest['slug'] . '">' . $contest['title'] . '</a><span class="meta">, lisätty ' . date('j.n.Y', strtotime($contest['date_added'])) . '</span></li>';
 	}
 
 	$front_page .= '</ul></div>';
 
 
-	$query = $db->prepare('SELECT name, id, date_added FROM tasks GROUP BY name ORDER BY SUM(views) DESC LIMIT 5');
+	$query = $db->prepare('SELECT tasks.title, task_versions.id FROM task_versions, tasks WHERE tasks.id = task_versions.task_id ORDER BY task_versions.views DESC LIMIT 5');
 	$query->execute();
 
 	$front_page .= '<div class="column"><h3>Eniten katsotut tehtävät</h3><ol>';
 
 	while($task = $query->fetch()){
-		$front_page .= '<li><a href="/tehtavat/' . $task['id'] . '">' . $task['name'] . '</a></li>';
+		$front_page .= '<li><a href="/tehtavat/' . $task['id'] . '">' . $task['title'] . '</a></li>';
 	}
 
 	$front_page .= '</ol></div>';
@@ -630,7 +594,7 @@ function get_contest_form() {
 	$helper .= '<p>Suurkiitos kaikille materiaalia toimittaville!</p>';
 
 	if(isset($_POST['name']) && !empty(trim($_POST['name']))) {
-	
+
 		$feedback = 'Kilpailun nimi: ' . $_POST['name'] . PHP_EOL;
 		$feedback .= 'Kilpailun kotisivut: ' . $_POST['homepage'] . PHP_EOL;
 		$feedback .= 'Ajankohta: ' . $_POST['date'] . PHP_EOL;
@@ -640,12 +604,12 @@ function get_contest_form() {
 		$feedback .= 'Järjestäjän kotisivut: ' . $_POST['organizer_url'] . PHP_EOL;
 		$feedback .= 'Yhteyshenkilö: ' . $_POST['person'] . PHP_EOL;
 		$feedback .= 'Lähettäjän sähköposti: ' . $_POST['email'] . PHP_EOL;
-	
+
 		$query = $db->prepare('INSERT INTO feedbacks (feedback, name, email, ip) VALUES (?, ?, ?, ?)');
 		$query->execute(array($feedback, (empty($_POST['person']) ? null : $_POST['person']), (empty($_POST['email']) ? null : $_POST['email']), $_SERVER['REMOTE_ADDR']));
 
 		$client = new \Http\Adapter\Guzzle6\Client();
-		
+
 		$mailgun = new Mailgun($config['mailgun']['apikey'], $client);
 
 		$mailgun->sendMessage($config['mailgun']['domain'],
@@ -659,9 +623,9 @@ function get_contest_form() {
 
 		$form = '<p>Kiitos viestistäsi! Muistathan vielä lähettää tehtäväkäskyt ja muut haluamasi materiaalit alla olevien ohjeiden mukaan.</p>';
 		$form .= $helper;
-	
+
 	} else {
-	
+
 		$form = '<p>Voit lähettää kilpailusi palveluun tällä lomakkeella. Täytä ensin kilpailun perustiedot, ja lue sen jälkeen ohjeet tehtäväkäskyjen lähetyksestä.</p>';
 		$form .= '<form action="/laheta" method="post" class="feedback">';
 		$form .= '<input type="text" placeholder="Kilpailun nimi" name="name" required>';
@@ -675,9 +639,9 @@ function get_contest_form() {
 		$form .= '<input type="email" placeholder="Lähettäjän sähköposti (ei julkaista)" name="email" required>';
 		$form .= '<input type="submit" value="Lähetä">';
 		$form .= '</form>';
-		
+
 		$form .= $helper;
-	
+
 	}
 
 	return $form;
@@ -687,28 +651,28 @@ function get_feedback_form() {
 	global $db, $config;
 
 	if(isset($_POST['feedback']) && !empty(trim($_POST['feedback']))) {
-	
+
 		$query = $db->prepare('INSERT INTO feedbacks (feedback, name, email, ip) VALUES (?, ?, ?, ?)');
 
 		$query->execute(array($_POST['feedback'], (empty($_POST['name']) ? null : $_POST['name']), (empty($_POST['email']) ? null : $_POST['email']), $_SERVER['REMOTE_ADDR']));
 
 		$client = new \Http\Adapter\Guzzle6\Client();
-		
+
 		$mailgun = new Mailgun($config['mailgun']['apikey'], $client);
 
 		$mailgun->sendMessage($config['mailgun']['domain'],
 			array(
 				'from'    => 'noreply@kisakanta.fi',
 				'to'      => 'villevuor@gmail.com',
-				'subject' => 'Palautetta Kisakannasta ' . date('j.n.Y'), 
+				'subject' => 'Palautetta Kisakannasta ' . date('j.n.Y'),
 				'text'    => 'Lähettäjä: ' . (empty($_POST['name']) ? '–' : $_POST['name']) . PHP_EOL . 'Sähköposti: ' . (empty($_POST['email']) ? '–' : $_POST['email']) . PHP_EOL . PHP_EOL . $_POST['feedback'],
 			)
 		);
 
 		$form = '<p>Kiitos palautteestasi!</p>';
-	
+
 	} else {
-	
+
 		$form = '<p>Voit antaa palvelusta palautetta tällä lomakkeella. Täytähän yhteystietosi, jos haluat viestillesi vastauksen.</p>';
 		$form .= '<form action="/palaute" method="post" class="feedback">';
 		$form .= '<textarea name="feedback" placeholder="Palautteesi" required></textarea>';
@@ -716,7 +680,7 @@ function get_feedback_form() {
 		$form .= '<input type="email" placeholder="Sähköposti" name="email" maxlength="50">';
 		$form .= '<input type="submit" value="Lähetä">';
 		$form .= '</form>';
-	
+
 	}
 
 	return $form;
@@ -724,7 +688,7 @@ function get_feedback_form() {
 
 function get_error($code = 404, $msg = 'Sivua ei löytynyt.') {
 	global $page;
-	
+
 	header('Error', true, $code);
 
 	$page['title'] = 'Virhe ' . $code;
