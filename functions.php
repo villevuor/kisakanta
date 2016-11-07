@@ -373,7 +373,7 @@ function get_task_list() {
 	$sql = str_replace('WHERE AND', 'WHERE', $sql);
 
 	if(empty($params)) {
-		$sql = 'SELECT tasks.title, task_versions.id FROM tasks, task_versions WHERE tasks.id = task_versions.task_id ORDER BY task_versions.date_added DESC LIMIT 20';
+		$sql = 'SELECT tasks.title, task_versions.id, task_versions.date_added FROM tasks, task_versions WHERE tasks.id = task_versions.task_id ORDER BY task_versions.date_added DESC LIMIT 20';
 		$header = 'Viimeksi lisätyt tehtävät';
 	}
 
@@ -405,7 +405,7 @@ function get_task_list() {
 function get_task_list_by_contest($contest_id) {
 	global $db;
 
-	$query = $db->prepare('SELECT tasks.id, tasks.title, task_versions.id AS task_version_id, task_versions.max_points, series.id AS series, series.short_title AS series_short FROM tasks, task_versions, task_version_series, series WHERE tasks.contest = ? AND task_versions.task_id = tasks.id AND task_version_series.task_version = task_versions.id AND task_version_series.series = series.id ORDER BY tasks.title ASC, series.order ASC');
+	$query = $db->prepare('SELECT tasks.id, tasks.title, task_versions.id AS task_version_id, task_versions.max_points, series.id AS series, series.short_title AS series_short, series.`order` FROM tasks, task_versions, task_version_series, series WHERE tasks.contest = ? AND task_versions.task_id = tasks.id AND task_version_series.task_version = task_versions.id AND task_version_series.series = series.id ORDER BY tasks.title ASC, series.`order` ASC');
 	$query->execute(array($contest_id));
 
 
@@ -463,7 +463,7 @@ function get_task_list_by_contest($contest_id) {
 function get_contest_series($contest_id) {
 	global $db;
 
-	$query = $db->prepare('SELECT DISTINCT series.title, series.short_title, series.id FROM series, tasks, task_versions, task_version_series WHERE tasks.contest = ? AND tasks.id = task_versions.task_id AND task_versions.id = task_version_series.task_version AND task_version_series.series = series.id ORDER BY series.`order`');
+	$query = $db->prepare('SELECT DISTINCT series.title, series.short_title, series.id, series.`order` FROM series, tasks, task_versions, task_version_series WHERE tasks.contest = ? AND tasks.id = task_versions.task_id AND task_versions.id = task_version_series.task_version AND task_version_series.series = series.id ORDER BY series.`order`');
 	$query->execute(array($contest_id));
 
 	if($query->rowCount() > 0) {
@@ -476,7 +476,7 @@ function get_contest_series($contest_id) {
 function get_task_version_series($task_version_id, $long = false) {
 	global $db;
 
-	$query = $db->prepare('SELECT series.short_title, series.title FROM series, task_version_series WHERE task_version_series.task_version = ? AND task_version_series.series = series.id ORDER BY series.`order`');
+	$query = $db->prepare('SELECT series.short_title, series.title, series.`order` FROM series, task_version_series WHERE task_version_series.task_version = ? AND task_version_series.series = series.id ORDER BY series.`order`');
 	$query->execute(array($task_version_id));
 
 	if($query->rowCount() > 0) {
@@ -568,7 +568,7 @@ function get_front_page() {
 	$front_page .= '</ul></div>';
 
 
-	$query = $db->prepare('SELECT tasks.title, task_versions.id FROM task_versions, tasks WHERE tasks.id = task_versions.task_id ORDER BY task_versions.views DESC LIMIT 5');
+	$query = $db->prepare('SELECT tasks.title, task_versions.id, task_versions.views FROM task_versions, tasks WHERE tasks.id = task_versions.task_id ORDER BY task_versions.views DESC LIMIT 5');
 	$query->execute();
 
 	$front_page .= '<div class="column"><h3>Eniten katsotut tehtävät</h3><ol>';
