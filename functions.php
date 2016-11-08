@@ -82,7 +82,6 @@ function get_header() {
 			<?php if(!empty($page['date'])) : ?><meta name="pubdate" content="<?php echo $page['date']; ?>"><?php endif; ?>
 
 			<meta name="viewport" content="width=device-width, initial-scale=1">
-			<meta name="robots" content="noindex, nofollow">
 
 			<link rel="stylesheet" href="/assets/css/main.css" async>
 
