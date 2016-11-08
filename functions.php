@@ -100,6 +100,8 @@ function get_header() {
 			<meta property="og:description" content="<?php echo $page['meta_description']; ?>">
 			<meta property="og:url" content="<?php echo 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?>">
 			<meta property="og:image" content="/assets/img/_MG_5302_1200x630_colored.jpg">
+			<meta property="og:locale" content="fi_FI">
+			<meta property="og:site_name" content="Kisakanta">
 		</head>
 		<body>
 			<a href="#" id="menu-toggle"><span></span><span></span><span></span></a>
