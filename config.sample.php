@@ -10,6 +10,7 @@ $config['db']['password'] = '';
 $config['mailgun']['apikey'] = '';
 $config['mailgun']['domain'] = '';
 
+$config['google-analytics'] = '';
 
 // Deployment configuration
 

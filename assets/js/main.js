@@ -21,6 +21,9 @@ function(){var a=w(e.href);a!=k&&(a in h?(h[k].scrollY=pageYOffset,k=a,K(h[a].ti
 
 // Kiska scripts
 
+InstantClick.on('change', function() {
+	ga('send', 'pageview', location.pathname + location.search);
+});
 InstantClick.init();
 
 // Menu icon click action
