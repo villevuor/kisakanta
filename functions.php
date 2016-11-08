@@ -377,13 +377,13 @@ function get_task_list() {
 	}
 
 	if(isset($_GET['s']) && !empty($_GET['s'])) {
-		$sql .= ' AND (tasks.name LIKE ? OR task_versions.content LIKE ? OR task_versions.tags LIKE ?)';
+		$sql .= ' AND (tasks.title LIKE ? OR task_versions.content LIKE ? OR task_versions.tags LIKE ?)';
 		$params[] = '%' . $_GET['s'] . '%';
 		$params[] = '%' . $_GET['s'] . '%';
 		$params[] = '%' . $_GET['s'] . '%';
 	}
 
-	$sql .= ' GROUP BY task_versions.task_id ORDER BY tasks.title ASC';
+	$sql .= ' ORDER BY tasks.title ASC';
 	$sql = str_replace('WHERE AND', 'WHERE', $sql);
 
 	if(empty($params)) {
