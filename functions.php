@@ -603,9 +603,9 @@ function get_contest_form() {
 
 	$helper = '<h3>Tehtäväkäskyjen ja muun materiaalin toimitus</h3>';
 	$helper .= '<p>Toimita tehtäväkäskyt, tehtäväluettelo (esim. kisakutsun osana) ja muut materiaalit <a href="https://www.dropbox.com/request/IjBGZsoG8EbViqeLjzi5" target="_blank">Dropbox-kansioomme</a>.</p>';
-	$helper .= '<p>Toimitathan materaalin mahdollisimman selkeässä muodossa (esim. ei työversioita).</p>';
-	$helper .= '<p>Voit liittää mukaan myös muita tiedostoja, kuten kilpailukutsun, arvostelupöytäkirjoja tai kilpailun logon. Vaiva ei nyt ole suuri, mutta 10 vuoden kuluttua on kiva tarkastella kisoja, joissa on enemmän materiaalia. :)</p>';
-	$helper .= '<p>Suurkiitos kaikille materiaalia toimittaville!</p>';
+	$helper .= '<p>Toimitathan materaalin selkeässä muodossa (esim. vain lopulliset versiot) mielellään yhtenä zip-pakettina.</p>';
+	$helper .= '<p>Voit liittää mukaan myös muita tiedostoja, kuten kilpailukutsun, arvostelupöytäkirjat, mallivastaukset, tulokse tai kilpailun logon. Vaiva ei nyt ole suuri, mutta 10 vuoden kuluttua on kiva tarkastella kisoja, joissa on enemmän materiaalia. :)</p>';
+	$helper .= '<p>Kiitos kaikille materiaalia toimittaville!</p>';
 
 	if(isset($_POST['name']) && !empty(trim($_POST['name']))) {
 
@@ -640,7 +640,7 @@ function get_contest_form() {
 
 	} else {
 
-		$form = '<p>Voit lähettää kilpailusi palveluun tällä lomakkeella. Täytä ensin kilpailun perustiedot, ja lue sen jälkeen ohjeet tehtäväkäskyjen lähetyksestä.</p>';
+		$form = '<p>Voit lähettää kilpailusi palveluun täällä. Täytä ja lähetä ensin kilpailun perustiedot. Lähetä sen jälkeen tehtäväkäskyt ja liitteet ohjeiden mukaan.</p>';
 		$form .= '<form action="/laheta" method="post" class="feedback">';
 		$form .= '<input type="text" placeholder="Kilpailun nimi" name="name" required>';
 		$form .= '<input type="text" placeholder="Kilpailun kotisivut" name="homepage">';
