@@ -77,9 +77,11 @@ function get_header() {
 			<meta charset="utf-8">
 			<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 			<title><?php echo $page['title']; ?></title>
-			<meta name="description" content="<?php echo $page['meta_description']; ?>">
-			<meta name="viewport" content="width=device-width, initial-scale=1">
 
+			<meta name="description" content="<?php echo $page['meta_description']; ?>">
+			<?php if(!empty($page['date'])) : ?><meta name="pubdate" content="<?php echo $page['date']; ?>"><?php endif; ?>
+
+			<meta name="viewport" content="width=device-width, initial-scale=1">
 			<meta name="robots" content="noindex, nofollow">
 
 			<link rel="stylesheet" href="/assets/css/main.css" async>
@@ -193,6 +195,7 @@ function get_contest($slug) {
 		$page['content'] .= (empty($contest['date_added']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($contest['date_added'])) . '</p>');
 
 		$page['meta_description'] = $contest['title'] . ' järjestettiin ' . format_date($contest['year'], $contest['start_date'], $contest['end_date']) . '. Kilpailun tehtäväkäskyt on tallennettu Kisakantaan.';
+		$page['date'] = date('Y-m-d', strtotime($contest['date_added']));
 
 	} else {
 		get_error(404);
@@ -212,6 +215,7 @@ function get_task($id) {
 
 		$page['title'] = $task['title'];
 		$page['meta_description'] = truncate($task['content']);
+		$page['date'] = date('Y-m-d', strtotime($task['date_added']));
 		$page['content'] = '';
 
 		$page['content'] .= '<p><strong><a href="/kisat/' . $task['contest_slug'] . '">' . $task['contest_title'] . ' ' . format_date($task['year'], $task['start_date'], $task['end_date']) . '</a></strong>';
