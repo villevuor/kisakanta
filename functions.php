@@ -92,7 +92,7 @@ function get_header() {
 			<link rel="mask-icon" href="/assets/favicon/safari-pinned-tab.svg" color="#009688">
 			<link rel="shortcut icon" href="/assets/favicon/favicon.ico">
 			<meta name="msapplication-config" content="/assets/favicon/browserconfig.xml">
-			<meta name="theme-color" content="#ffffff">
+			<meta name="theme-color" content="#009688">
 
 			<meta property="og:type" content="article">
 			<meta property="og:title" content="<?php echo $page['title']; ?>">
