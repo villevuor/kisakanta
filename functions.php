@@ -131,17 +131,12 @@ function get_footer() {
 	?>
 			</main>
 
-			<script src="/assets/js/main.js"></script>
-			<script src="//www.google-analytics.com/analytics.js"></script>
-
+			<script src="//google-analytics.com/analytics.js"></script>
 			<script>
 				ga('create', '<?php echo $config['google-analytics']; ?>','auto');
-
-				InstantClick.on('change', function() {
-					ga('send', 'pageview', location.pathname + location.search);
-				});
-				InstantClick.init();
 			</script>
+			<script src="/assets/js/main.js"></script>
+
 		</body>
 	</html>
 	<?php
