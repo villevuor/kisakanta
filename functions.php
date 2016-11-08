@@ -72,7 +72,7 @@ function page_setup() {
 function get_header() {
 	global $page;
 	?><!doctype html>
-	<html class="no-js" lang="fi">
+	<html class="no-js" lang="fi" prefix="og: http://ogp.me/ns#">
 		<head>
 			<meta charset="utf-8">
 			<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
