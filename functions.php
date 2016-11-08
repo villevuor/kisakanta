@@ -355,7 +355,7 @@ function get_task_list() {
 	$filters .= '<div class="form-group"><select name="sarja">' . get_options('serie') . '</select></div>';
 	$filters .= '<div class="form-group"><select name="kisa">' . get_options('contest') . '</select></div>';
 	$filters .= '<div class="form-group block"><input type="text" name="s" value="' . (!empty($_GET['s']) ? htmlspecialchars($_GET['s']) : '') . '" placeholder="Hae tehtävistä"></div>';
-	$filters .= '<input type="submit" value="Hae"><input type="reset" value="Tyhjennä kentät">';
+	$filters .= '<input type="submit" value="Hae">';
 	$filters .= '</form>';
 
 	$sql = 'SELECT task_versions.id, tasks.title FROM tasks, task_versions WHERE tasks.id = task_versions.task_id';
