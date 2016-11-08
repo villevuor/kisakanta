@@ -204,7 +204,7 @@ function get_contest($slug) {
 function get_task($id) {
 	global $db, $page;
 
-	$query = $db->prepare('SELECT tasks.*, task_versions.*, contests.title AS contest_title, contests.slug AS contest_slug, contests.year, contests.start_date, contests.end_date, task_version_types.title AS type, task_categories.name AS category, tasks.id AS task_id FROM tasks, task_versions, contests, task_version_types, task_categories WHERE task_versions.id = ? AND task_versions.task_id = tasks.id AND tasks.contest = contests.id AND task_version_types.id = task_versions.type AND task_categories.id = tasks.category');
+	$query = $db->prepare('SELECT tasks.*, task_versions.*, contests.title AS contest_title, contests.slug AS contest_slug, contests.year, contests.start_date, contests.end_date, task_version_types.title AS type, task_categories.title AS category, tasks.id AS task_id FROM tasks, task_versions, contests, task_version_types, task_categories WHERE task_versions.id = ? AND task_versions.task_id = tasks.id AND tasks.contest = contests.id AND task_version_types.id = task_versions.type AND task_categories.id = tasks.category');
 	$query->execute(array($id));
 
 	if($query->rowCount() > 0) {
@@ -515,13 +515,13 @@ function get_options($field) {
 
 	if($field == 'category') {
 
-		$query = $db->prepare('SELECT * FROM task_categories ORDER BY name');
+		$query = $db->prepare('SELECT * FROM task_categories ORDER BY title');
 		$query->execute();
 
 		$return .= '<option disabled' . (!isset($_GET['kategoria']) ? ' selected' : '') . '>Kategoria</option>';
 
 		while($cat = $query->fetch()) {
-			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['kategoria']) && $_GET['kategoria'] == $cat['id']) ? ' selected' : '') . '>' . $cat['name'] . '</option>';
+			$return .= '<option value="' . $cat['id'] . '"' . ((isset($_GET['kategoria']) && $_GET['kategoria'] == $cat['id']) ? ' selected' : '') . '>' . $cat['title'] . '</option>';
 		}
 
 	} elseif($field == 'serie') {
