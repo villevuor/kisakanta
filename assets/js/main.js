@@ -21,11 +21,15 @@ function(){var a=w(e.href);a!=k&&(a in h?(h[k].scrollY=pageYOffset,k=a,K(h[a].ti
 
 // Kiska scripts
 
+(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+
+ga('create', '<?php echo $config['google-analytics']; ?>','auto');
+ga('send', 'pageview');
+
 InstantClick.on('change', function() {
 	ga('send', 'pageview', location.pathname + location.search);
 });
 InstantClick.init();
-
 // Menu icon click action
 document.getElementById('menu-toggle').onclick = function(){
 	document.body.classList.toggle('show-menu');
