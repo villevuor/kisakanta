@@ -25,21 +25,25 @@ function page_setup() {
 		case '':
 			$page['title'] = 'Kisakanta';
 			$page['hide_title'] = true;
+			$page['meta_description'] = 'Kisakanta on arkisto partiotaitokisojen tehtäväkäskyille. Selaa vanhoja kisoja, hae ideoita rastitehtäviin ja lähetä oma materiaalisi!';
 			$page['content'] = get_front_page();
 			break;
 		case 'tietoa':
 			$page['title'] = 'Tietoa';
-			$page['content'] = '<p>Kisakanta on Espoon Partiotuen pystyttämä ja ylläpitämä pankki partiotaitokisojen rastikäskyille. Kiskan tarkoituksena on säilöä kootusti kisoihin tuotettua materiaalia ja tarjota vinkkejä uusia kisoja suunnitteleville. Palvelu on tarkoitettu kaikille partiotaitokilpailuille ympäri Suomen, eikä pelkästään EPT:n omille kisoille.</p>';
-			$page['content'] .= '<p>Kisakanta on perustettu vuonna 2010. Vuoden 2016 aikana se joutui hakkeroinnin kohteeksi, mutta materiaali saatiin pelastettua ja palvelu palasi entistä ehompana toukokuussa 2016.</p>';
+			$page['meta_description'] = 'Tietoa Kisakanta-palvelusta ja sen historiasta';
+			$page['content'] = '<p>Kisakanta on Espoon Partiotuen pystyttämä ja ylläpitämä pankki partiotaitokisojen tehtäväkäskyille. Kiskan tarkoituksena on säilöä kootusti kisoihin tuotettua materiaalia ja tarjota vinkkejä uusia kisoja suunnitteleville. Palvelu on tarkoitettu kaikille partiotaitokilpailuille ympäri Suomen, eikä pelkästään EPT:n omille kisoille.</p>';
+			$page['content'] .= '<p>Kisakanta on perustettu vuonna 2010. Vuoden 2016 alussa sivusto joutui hakkeroinnin kohteeksi, mutta materiaali saatiin pelastettua ja palvelu palasi entistä ehompana marraskuussa 2016.</p>';
 			$page['content'] .= '<h3>Materiaali on tervetullutta</h3><p>Lähetä järjestämäsi kilpailun tehtäväkäskyt ja muu haluamasi materiaali meille! Arkistointi pitää kilpailun tärkeimmän sisällön eli tehtäväkäskyt tallessa, ja helpottaa muita partiokisoja järjestäviä antamalla inspiraatiota ja vinkkejä. Samalla ylläpidät osaltasi suomalaista partiotaitokilpailukulttuuria.</p><p>Aineiston lähetys on tehty mahdollisimman helpoksi. <a href="/laheta">Katso tarkemmat ohjeet ja lähetä materiaalia täällä.</a></p>';
 			$page['content'] .= '<h3>Yhteystiedot</h3><p>Voit ottaa yhteyttä Kisakantaan liittyvissä asioissa <a href="/palaute">palautelomakkeella</a>.</p>';
 			break;
 		case 'laheta':
 			$page['title'] = 'Lähetä kilpailusi';
+			$page['meta_description'] = 'Osallistu arkistointiin ja lähetä järjestämäsi kilpailun aineistot kisakantaan!';
 			$page['content'] = get_contest_form();
 			break;
 		case 'palaute':
 			$page['title'] = 'Palaute';
+			$page['meta_description'] = 'Anna palautetta Kisakanta-palvelusta';
 			$page['content'] = get_feedback_form();
 			break;
 		case (preg_match('/kisat\/(?<slug>[\-a-zA-Z0-9]+)/', $path, $matches) ? true : false) :
@@ -47,6 +51,7 @@ function page_setup() {
 			break;
 		case 'kisat':
 			$page['title'] = 'Kilpailut';
+			$page['meta_description'] = 'Selaa Kisakanta-palveluun tallenettuja kilpailuita.';
 			$page['content'] = get_contest_list();
 			break;
 		case (preg_match('/tehtavat\/(?<id>[0-9]+)/', $path, $matches) ? true : false) :
@@ -55,6 +60,7 @@ function page_setup() {
 			break;
 		case 'tehtavat':
 			$page['title'] = 'Tehtävät';
+			$page['meta_description'] = 'Selaa Kisakanta-palveluun tallenettuja tehtäviä.';
 			$page['content'] = get_task_list();
 			break;
 		default:
@@ -71,7 +77,7 @@ function get_header() {
 			<meta charset="utf-8">
 			<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 			<title><?php echo $page['title']; ?></title>
-			<meta name="description" content="">
+			<meta name="description" content="<?php echo $page['meta_description']; ?>">
 			<meta name="viewport" content="width=device-width, initial-scale=1">
 
 			<meta name="robots" content="noindex, nofollow">
@@ -87,7 +93,11 @@ function get_header() {
 			<meta name="msapplication-config" content="/assets/favicon/browserconfig.xml">
 			<meta name="theme-color" content="#ffffff">
 
-			<?php /* <script src="/assets/js/vendor/modernizr-2.8.3.min.js"></script> */ ?>
+			<meta property="og:type" content="article">
+			<meta property="og:title" content="<?php echo $page['title']; ?>">
+			<meta property="og:description" content="<?php echo $page['meta_description']; ?>">
+			<meta property="og:url" content="<?php echo 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?>">
+			<meta property="og:image" content="/assets/img/_MG_5302_1200x630_colored.jpg">
 		</head>
 		<body>
 			<a href="#" id="menu-toggle"><span></span><span></span><span></span></a>
@@ -182,6 +192,8 @@ function get_contest($slug) {
 
 		$page['content'] .= (empty($contest['date_added']) ? '' : '<p class="meta">Lisätty ' . date('j.n.Y', strtotime($contest['date_added'])) . '</p>');
 
+		$page['meta_description'] = $contest['title'] . ' järjestettiin ' . format_date($contest['year'], $contest['start_date'], $contest['end_date']) . '. Kilpailun tehtäväkäskyt on tallennettu Kisakantaan.';
+
 	} else {
 		get_error(404);
 	}
@@ -199,6 +211,7 @@ function get_task($id) {
 		$series = get_task_version_series($task['id']);
 
 		$page['title'] = $task['title'];
+		$page['meta_description'] = truncate($task['content']);
 		$page['content'] = '';
 
 		$page['content'] .= '<p><strong><a href="/kisat/' . $task['contest_slug'] . '">' . $task['contest_title'] . ' ' . format_date($task['year'], $task['start_date'], $task['end_date']) . '</a></strong>';
@@ -690,6 +703,7 @@ function get_error($code = 404, $msg = 'Sivua ei löytynyt.') {
 	header('Error', true, $code);
 
 	$page['title'] = 'Virhe ' . $code;
+	$page['meta_description'] = $msg;
 	$page['content'] = '<p>' . $msg . '</p><p><a href="/">Palaa etusivulle.</a></p>';
 
 	get_header();
@@ -705,6 +719,19 @@ function format_date($year, $start_date = '', $end_date = '') {
 
 function punkku_series_notice() {
 	return '<div class="alternative punkku"><p>Espoon Punasessa tyttöjen sarjojen nimet ovat erilaiset kuin valtakunnallisissa kisoissa. 14-18-vuotiaiden tyttöjen sarja on <em>keltainen</em> ja yli 18-vuotiaiden naisten sarja taas <em>sininen</em>.</p></div>';
+}
+
+function truncate($string, $length = 160, $append = "…") {
+	$string = trim($string);
+
+	if(strlen($string) > $length) {
+		$string = wordwrap($string, $length);
+		$string = explode("\n", $string, 2);
+		$string = trim($string[0]);
+		$string = $string . (in_array(substr($string, -1), array('!', '?', '.')) ? '' : $append);
+	}
+
+	return $string;
 }
 
 ?>
