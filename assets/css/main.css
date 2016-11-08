@@ -251,8 +251,16 @@ label {
 img {
 	max-width: 100%;
 	display: block;
-	margin: 0 0 1em;
+	margin: 1em 0;
 }
+
+	img.logo {
+		padding: 10px;
+		background: #fff;
+		border: 1px solid #ccc;
+		max-width: 200px;
+		margin-top: -4em;
+	}
 
 .column {
 	width: 50%;
@@ -286,6 +294,10 @@ img {
 @media only screen and (max-width: 767px) {
 	img {
 		margin: 1em 0;
+	}
+
+	img.logo {
+		margin-top: 0;
 	}
 
 	#site-header {
