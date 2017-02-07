@@ -82,6 +82,8 @@ function get_header() {
 			<meta name="description" content="<?php echo $page['meta_description']; ?>">
 			<?php if(!empty($page['date'])) : ?><meta name="pubdate" content="<?php echo $page['date']; ?>"><?php endif; ?>
 
+			<meta name="google-site-verification" content="Nf5ddxEyXWqBzfjF0ELb25K3qB8BIVXaJMaA4-4sXR4">
+			
 			<meta name="viewport" content="width=device-width, initial-scale=1">
 
 			<link rel="stylesheet" href="/assets/css/main.css" async>
